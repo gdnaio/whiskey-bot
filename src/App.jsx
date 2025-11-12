@@ -12,6 +12,11 @@ import Logs from './pages/RawMaterials/Logs'
 
 // Production pages
 import Fermentation from './pages/Production/Fermentation'
+import FermentationScrapLog from './pages/Production/FermentationScrapLog'
+import FermentationLog from './pages/Production/FermentationLog'
+import FermentationCooks from './pages/Production/FermentationCooks'
+import FermenterStatus from './pages/Production/FermenterStatus'
+import FermentationReports from './pages/Production/FermentationReports'
 import Distillation from './pages/Production/Distillation'
 
 // Barrels pages
@@ -91,6 +96,11 @@ function App() {
               
               {/* Production */}
               <Route path="/production/fermentation" element={<Fermentation />} />
+              <Route path="/production/fermentation-scrap-log" element={<FermentationScrapLog />} />
+              <Route path="/production/fermentation-log" element={<FermentationLog />} />
+              <Route path="/production/fermentation-cooks" element={<FermentationCooks />} />
+              <Route path="/production/fermenter-status" element={<FermenterStatus />} />
+              <Route path="/production/fermentation-reports" element={<FermentationReports />} />
               <Route path="/production/distillation" element={<Distillation />} />
               
               {/* Barrels */}

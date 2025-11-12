@@ -19,6 +19,11 @@ const navigation = [
     path: '/production',
     subcategories: [
       { name: 'Fermentation', path: '/production/fermentation' },
+      { name: 'Fermentation Scrap Log', path: '/production/fermentation-scrap-log' },
+      { name: 'Fermentation Log', path: '/production/fermentation-log' },
+      { name: 'Fermentation Cooks', path: '/production/fermentation-cooks' },
+      { name: 'Fermenter Status', path: '/production/fermenter-status' },
+      { name: 'Fermentation Reports', path: '/production/fermentation-reports' },
       { name: 'Distillation', path: '/production/distillation' },
     ]
   },
