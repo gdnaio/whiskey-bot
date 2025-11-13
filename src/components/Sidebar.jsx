@@ -6,24 +6,19 @@ const navigation = [
   {
     name: 'Raw Materials',
     path: '/raw-materials',
-    subcategories: [
-      { name: 'Receipts', path: '/raw-materials/receipts' },
-      { name: 'Inventory', path: '/raw-materials/inventory' },
-      { name: 'Transactions', path: '/raw-materials/transactions' },
-      { name: 'Conversions', path: '/raw-materials/conversions' },
-      { name: 'Logs', path: '/raw-materials/logs' },
-    ]
+    subcategories: []
   },
   {
     name: 'Production',
     path: '/production',
     subcategories: [
-      { name: 'Fermentation', path: '/production/fermentation' },
       { name: 'Fermentation Scrap Log', path: '/production/fermentation-scrap-log' },
       { name: 'Fermentation Log', path: '/production/fermentation-log' },
       { name: 'Fermentation Cooks', path: '/production/fermentation-cooks' },
       { name: 'Fermenter Status', path: '/production/fermenter-status' },
       { name: 'Fermentation Reports', path: '/production/fermentation-reports' },
+      { name: 'New Distillation', path: '/production/new-distillation' },
+      { name: 'Distillation Log', path: '/production/distillation-log' },
       { name: 'Distillation', path: '/production/distillation' },
     ]
   },
@@ -31,87 +26,68 @@ const navigation = [
     name: 'Barrels',
     path: '/barrels',
     subcategories: [
-      { name: 'Fill Barrels', path: '/barrels/fill-barrels' },
+      { name: 'New Fill', path: '/barrels/new-fill' },
+      { name: 'Barrel Fill Log', path: '/barrels/barrel-fill-log' },
+      { name: 'Onsite Barrels', path: '/barrels/onsite-barrels' },
+      { name: 'Offsite Barrels', path: '/barrels/offsite-barrels' },
       { name: 'Rackhouse Inventory', path: '/barrels/rackhouse-inventory' },
-      { name: 'Dump Barrels', path: '/barrels/dump-barrels' },
-      { name: 'Manage Barrels', path: '/barrels/manage-barrels' },
+      { name: 'Queued Dumps', path: '/barrels/queued-dumps' },
+      { name: 'Completed Dumps', path: '/barrels/completed-dumps' },
+      { name: 'Barrel History', path: '/barrels/barrel-history' },
+      { name: 'Update Log', path: '/barrels/update-log' },
+      { name: 'Empty Barrels', path: '/barrels/empty-barrels' },
     ]
   },
   {
     name: 'Processing',
     path: '/processing',
     subcategories: [
-      { name: 'Batching', path: '/processing/batching' },
-      { name: 'Bottling', path: '/processing/bottling' },
-      { name: 'Mixed Cases', path: '/processing/mixed-cases' },
-      { name: 'Dumped Cases', path: '/processing/dumped-cases' },
-      { name: 'Recasing', path: '/processing/recasing' },
-      { name: 'Case and CSC Labels', path: '/processing/case-and-csc-labels' },
+      { name: 'New Batching Run', path: '/processing/new-batching-run' },
+      { name: 'Batching Run Log', path: '/processing/batching-run-log' },
+      { name: 'New Bottling Run', path: '/processing/new-bottling-run' },
+      { name: 'Bottling Run Log', path: '/processing/bottling-run-log' },
     ]
   },
   {
     name: 'Transfer In Bond',
     path: '/transfer-in-bond',
     subcategories: [
-      { name: 'Inbound', path: '/transfer-in-bond/inbound' },
-      { name: 'Outbound', path: '/transfer-in-bond/outbound' },
+      { name: 'New Tote TIB In', path: '/transfer-in-bond/new-tote-tib-in' },
+      { name: 'New Tanker TIB In', path: '/transfer-in-bond/new-tanker-tib-in' },
+      { name: 'New Barrel TIB In', path: '/transfer-in-bond/new-barrel-tib-in' },
+      { name: 'New Bulk Barrel TIB In', path: '/transfer-in-bond/new-bulk-barrel-tib-in' },
+      { name: 'New Finished Product TIB In', path: '/transfer-in-bond/new-finished-product-tib-in' },
+      { name: 'TIB In Log', path: '/transfer-in-bond/tib-in-log' },
+      { name: 'New Tank/Tote TIB Out', path: '/transfer-in-bond/new-tank-tote-tib-out' },
+      { name: 'New Tanker TIB Out', path: '/transfer-in-bond/new-tanker-tib-out' },
+      { name: 'New Finished Product TIB Out', path: '/transfer-in-bond/new-finished-product-tib-out' },
+      { name: 'TIB Out Log', path: '/transfer-in-bond/tib-out-log' },
     ]
   },
   {
     name: 'Finished Products',
     path: '/finished-products',
-    subcategories: [
-      { name: 'Finished Goods Inventory', path: '/finished-products/finished-goods-inventory' },
-      { name: 'Finished Goods Transfers', path: '/finished-products/finished-goods-transfers' },
-      { name: 'Sales Orders', path: '/finished-products/sales-orders' },
-      { name: 'Sales Interactions', path: '/finished-products/sales-interactions' },
-      { name: 'Price Lists', path: '/finished-products/price-lists' },
-      { name: 'Bailments and Depletions', path: '/finished-products/bailments-and-depletions' },
-    ]
+    subcategories: []
   },
   {
     name: 'Tanks',
     path: '/tanks',
-    subcategories: [
-      { name: 'Tank Status', path: '/tanks/tank-status' },
-      { name: 'Logs', path: '/tanks/logs' },
-    ]
+    subcategories: []
   },
   {
     name: 'Logs and Reports',
     path: '/logs-and-reports',
-    subcategories: [
-      { name: 'TTB Reports', path: '/logs-and-reports/ttb-reports' },
-      { name: 'Financial Reports', path: '/logs-and-reports/financial-reports' },
-      { name: 'Whiskey System Reports', path: '/logs-and-reports/whiskey-system-reports' },
-      { name: 'State Reports', path: '/logs-and-reports/state-reports' },
-      { name: 'Printable Worksheets', path: '/logs-and-reports/printable-worksheets' },
-      { name: 'Physical Inventory', path: '/logs-and-reports/physical-inventory' },
-      { name: 'Whiskey System Logs', path: '/logs-and-reports/whiskey-system-logs' },
-      { name: 'Daily Logs', path: '/logs-and-reports/daily-logs' },
-      { name: 'Data Archive', path: '/logs-and-reports/data-archive' },
-    ]
+    subcategories: []
   },
   {
     name: 'Administrator',
     path: '/administrator',
-    subcategories: [
-      { name: 'Delete Transactions', path: '/administrator/delete-transactions' },
-      { name: 'QuickBooks Export', path: '/administrator/quickbooks-export' },
-      { name: 'Payment Settings', path: '/administrator/payment-settings' },
-      { name: 'Queued Jobs', path: '/administrator/queued-jobs' },
-      { name: 'Manage Users', path: '/administrator/manage-users' },
-      { name: 'Reset Account', path: '/administrator/reset-account' },
-    ]
+    subcategories: []
   },
   {
     name: 'Calculator',
     path: '/calculator',
-    subcategories: [
-      { name: 'Proof Gallons', path: '/calculator/proof-gallons' },
-      { name: 'LAA', path: '/calculator/laa' },
-      { name: 'Conversions', path: '/calculator/conversions' },
-    ]
+    subcategories: []
   },
   {
     name: 'Settings (DSP Info)',
