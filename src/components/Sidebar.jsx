@@ -67,22 +67,49 @@ const navigation = [
   {
     name: 'Finished Products',
     path: '/finished-products',
-    subcategories: []
+    subcategories: [
+      { name: 'Finished Goods Inventory', path: '/finished-products/finished-goods-inventory' },
+      { name: 'New Finished Goods Transfers', path: '/finished-products/new-finished-goods-transfers' },
+      { name: 'Finished Goods Transfers Logs', path: '/finished-products/finished-goods-transfers-logs' },
+      { name: 'New Sales Order', path: '/finished-products/new-sales-order' },
+      { name: 'Sales Order Log', path: '/finished-products/sales-order-log' },
+      { name: 'Invoice Log', path: '/finished-products/invoice-log' },
+      { name: 'Price Lists', path: '/finished-products/price-lists' },
+    ]
   },
   {
     name: 'Tanks',
     path: '/tanks',
-    subcategories: []
+    subcategories: [
+      { name: 'Tank Status', path: '/tanks/tank-status' },
+      { name: 'Tank Move Log', path: '/tanks/tank-move-log' },
+      { name: 'Filtering Log', path: '/tanks/filtering-log' },
+      { name: 'Adjustment Log', path: '/tanks/adjustment-log' },
+      { name: 'Records of Destruction', path: '/tanks/records-of-destruction' },
+    ]
   },
   {
     name: 'Logs and Reports',
     path: '/logs-and-reports',
-    subcategories: []
+    subcategories: [
+      { name: 'TTB Production Reports', path: '/logs-and-reports/ttb-production-reports' },
+      { name: 'TTB Storage Reports', path: '/logs-and-reports/ttb-storage-reports' },
+      { name: 'TTB Processing Reports', path: '/logs-and-reports/ttb-processing-reports' },
+      { name: 'TTB Reports Checker', path: '/logs-and-reports/ttb-reports-checker' },
+      { name: 'Excise Tax Schedule & Returns', path: '/logs-and-reports/excise-tax-schedule-returns' },
+      { name: 'WS Pay.Gov Chrome Extension', path: '/logs-and-reports/ws-pay-gov-chrome-extension' },
+      { name: 'Whiskey System Logs', path: '/logs-and-reports/whiskey-system-logs' },
+      { name: 'Daily Logs', path: '/logs-and-reports/daily-logs' },
+    ]
   },
   {
     name: 'Administrator',
     path: '/administrator',
-    subcategories: []
+    subcategories: [
+      { name: 'Delete Transactions', path: '/administrator/delete-transactions' },
+      { name: 'QuickBooks Export', path: '/administrator/quickbooks-export' },
+      { name: 'Manage Users', path: '/administrator/manage-users' },
+    ]
   },
   {
     name: 'Calculator',
@@ -92,7 +119,34 @@ const navigation = [
   {
     name: 'Settings (DSP Info)',
     path: '/settings',
-    subcategories: []
+    subcategories: [
+      { name: 'DSP Settings and Info', path: '/settings/dsp-settings-and-info' },
+      { name: 'Whiskey Kinds', path: '/settings/whiskey-kinds' },
+      { name: 'TTB Material Kinds', path: '/settings/ttb-material-kinds' },
+      { name: 'Base Tax Rates', path: '/settings/base-tax-rates' },
+      { name: 'Raw Materials', path: '/settings/raw-materials' },
+      { name: 'Internal Spirit Types', path: '/settings/internal-spirit-types' },
+      { name: 'Mash Bills', path: '/settings/mash-bills' },
+      { name: 'Recipes', path: '/settings/recipes' },
+      { name: 'Product Lines', path: '/settings/product-lines' },
+      { name: 'Product Masters', path: '/settings/product-masters' },
+      { name: 'Mixed Product Masters', path: '/settings/mixed-product-masters' },
+      { name: 'Fermenters', path: '/settings/fermenters' },
+      { name: 'Tanks', path: '/settings/tanks' },
+      { name: 'Vendors', path: '/settings/vendors' },
+      { name: 'Customers', path: '/settings/customers' },
+      { name: 'Contacts', path: '/settings/contacts' },
+      { name: 'DSPs', path: '/settings/dsps' },
+      { name: 'Owners', path: '/settings/owners' },
+      { name: 'Linked Distilleries', path: '/settings/linked-distilleries' },
+      { name: 'Rackhouses', path: '/settings/rackhouses' },
+      { name: 'Warehouses', path: '/settings/warehouses' },
+      { name: 'Starting Tanks', path: '/settings/starting-tanks' },
+      { name: 'Starting Finished Goods', path: '/settings/starting-finished-goods' },
+      { name: 'Starting Raw Materials', path: '/settings/starting-raw-materials' },
+      { name: 'Starting Onsite Barrels', path: '/settings/starting-onsite-barrels' },
+      { name: 'Starting Offsite Barrels', path: '/settings/starting-offsite-barrels' },
+    ]
   },
 ]
 

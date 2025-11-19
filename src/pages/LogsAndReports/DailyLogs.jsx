@@ -5,4 +5,3 @@ function DailyLogs() {
 }
 
 export default DailyLogs
-

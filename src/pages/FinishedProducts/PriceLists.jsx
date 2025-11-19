@@ -5,4 +5,3 @@ function PriceLists() {
 }
 
 export default PriceLists
-

@@ -5,4 +5,3 @@ function TankStatus() {
 }
 
 export default TankStatus
-

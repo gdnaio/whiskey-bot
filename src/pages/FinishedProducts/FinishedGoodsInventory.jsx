@@ -5,4 +5,3 @@ function FinishedGoodsInventory() {
 }
 
 export default FinishedGoodsInventory
-

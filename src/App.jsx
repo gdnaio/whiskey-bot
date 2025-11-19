@@ -5,12 +5,66 @@ import Home from './pages/Home'
 
 // Main category pages
 import RawMaterials from './pages/RawMaterials'
-import FinishedProducts from './pages/FinishedProducts'
-import Tanks from './pages/Tanks'
-import LogsAndReports from './pages/LogsAndReports'
-import Administrator from './pages/Administrator'
 import Calculator from './pages/Calculator'
-import Settings from './pages/Settings'
+
+// Settings pages
+import DSPSettingsAndInfo from './pages/Settings/DSPSettingsAndInfo'
+import WhiskeyKinds from './pages/Settings/WhiskeyKinds'
+import TTBMaterialKinds from './pages/Settings/TTBMaterialKinds'
+import BaseTaxRates from './pages/Settings/BaseTaxRates'
+import SettingsRawMaterials from './pages/Settings/RawMaterials'
+import InternalSpiritTypes from './pages/Settings/InternalSpiritTypes'
+import MashBills from './pages/Settings/MashBills'
+import Recipes from './pages/Settings/Recipes'
+import ProductLines from './pages/Settings/ProductLines'
+import ProductMasters from './pages/Settings/ProductMasters'
+import MixedProductMasters from './pages/Settings/MixedProductMasters'
+import Fermenters from './pages/Settings/Fermenters'
+import SettingsTanks from './pages/Settings/Tanks'
+import Vendors from './pages/Settings/Vendors'
+import Customers from './pages/Settings/Customers'
+import Contacts from './pages/Settings/Contacts'
+import DSPs from './pages/Settings/DSPs'
+import Owners from './pages/Settings/Owners'
+import LinkedDistilleries from './pages/Settings/LinkedDistilleries'
+import Rackhouses from './pages/Settings/Rackhouses'
+import Warehouses from './pages/Settings/Warehouses'
+import StartingTanks from './pages/Settings/StartingTanks'
+import StartingFinishedGoods from './pages/Settings/StartingFinishedGoods'
+import StartingRawMaterials from './pages/Settings/StartingRawMaterials'
+import StartingOnsiteBarrels from './pages/Settings/StartingOnsiteBarrels'
+import StartingOffsiteBarrels from './pages/Settings/StartingOffsiteBarrels'
+
+// Administrator pages
+import DeleteTransactions from './pages/Administrator/DeleteTransactions'
+import QuickBooksExport from './pages/Administrator/QuickBooksExport'
+import ManageUsers from './pages/Administrator/ManageUsers'
+
+// Logs and Reports pages
+import TTBProductionReports from './pages/LogsAndReports/TTBProductionReports'
+import TTBStorageReports from './pages/LogsAndReports/TTBStorageReports'
+import TTBProcessingReports from './pages/LogsAndReports/TTBProcessingReports'
+import TTBReportsChecker from './pages/LogsAndReports/TTBReportsChecker'
+import ExciseTaxScheduleReturns from './pages/LogsAndReports/ExciseTaxScheduleReturns'
+import WSPayGovChromeExtension from './pages/LogsAndReports/WSPayGovChromeExtension'
+import WhiskeySystemLogs from './pages/LogsAndReports/WhiskeySystemLogs'
+import DailyLogs from './pages/LogsAndReports/DailyLogs'
+
+// Tanks pages
+import TankStatus from './pages/Tanks/TankStatus'
+import TankMoveLog from './pages/Tanks/TankMoveLog'
+import FilteringLog from './pages/Tanks/FilteringLog'
+import AdjustmentLog from './pages/Tanks/AdjustmentLog'
+import RecordsOfDestruction from './pages/Tanks/RecordsOfDestruction'
+
+// Finished Products pages
+import FinishedGoodsInventory from './pages/FinishedProducts/FinishedGoodsInventory'
+import NewFinishedGoodsTransfers from './pages/FinishedProducts/NewFinishedGoodsTransfers'
+import FinishedGoodsTransfersLogs from './pages/FinishedProducts/FinishedGoodsTransfersLogs'
+import NewSalesOrder from './pages/FinishedProducts/NewSalesOrder'
+import SalesOrderLog from './pages/FinishedProducts/SalesOrderLog'
+import InvoiceLog from './pages/FinishedProducts/InvoiceLog'
+import PriceLists from './pages/FinishedProducts/PriceLists'
 
 // Transfer In Bond pages
 import NewToteTIBIn from './pages/TransferInBond/NewToteTIBIn'
@@ -65,12 +119,7 @@ function App() {
               
               {/* Main category pages */}
               <Route path="/raw-materials" element={<RawMaterials />} />
-              <Route path="/finished-products" element={<FinishedProducts />} />
-              <Route path="/tanks" element={<Tanks />} />
-              <Route path="/logs-and-reports" element={<LogsAndReports />} />
-              <Route path="/administrator" element={<Administrator />} />
               <Route path="/calculator" element={<Calculator />} />
-              <Route path="/settings" element={<Settings />} />
               
               {/* Barrels subcategories */}
               <Route path="/barrels/new-fill" element={<NewFill />} />
@@ -101,6 +150,65 @@ function App() {
               <Route path="/transfer-in-bond/new-tanker-tib-out" element={<NewTankerTIBOut />} />
               <Route path="/transfer-in-bond/new-finished-product-tib-out" element={<NewFinishedProductTIBOut />} />
               <Route path="/transfer-in-bond/tib-out-log" element={<TIBOutLog />} />
+              
+              {/* Finished Products subcategories */}
+              <Route path="/finished-products/finished-goods-inventory" element={<FinishedGoodsInventory />} />
+              <Route path="/finished-products/new-finished-goods-transfers" element={<NewFinishedGoodsTransfers />} />
+              <Route path="/finished-products/finished-goods-transfers-logs" element={<FinishedGoodsTransfersLogs />} />
+              <Route path="/finished-products/new-sales-order" element={<NewSalesOrder />} />
+              <Route path="/finished-products/sales-order-log" element={<SalesOrderLog />} />
+              <Route path="/finished-products/invoice-log" element={<InvoiceLog />} />
+              <Route path="/finished-products/price-lists" element={<PriceLists />} />
+              
+              {/* Tanks subcategories */}
+              <Route path="/tanks/tank-status" element={<TankStatus />} />
+              <Route path="/tanks/tank-move-log" element={<TankMoveLog />} />
+              <Route path="/tanks/filtering-log" element={<FilteringLog />} />
+              <Route path="/tanks/adjustment-log" element={<AdjustmentLog />} />
+              <Route path="/tanks/records-of-destruction" element={<RecordsOfDestruction />} />
+              
+              {/* Logs and Reports subcategories */}
+              <Route path="/logs-and-reports/ttb-production-reports" element={<TTBProductionReports />} />
+              <Route path="/logs-and-reports/ttb-storage-reports" element={<TTBStorageReports />} />
+              <Route path="/logs-and-reports/ttb-processing-reports" element={<TTBProcessingReports />} />
+              <Route path="/logs-and-reports/ttb-reports-checker" element={<TTBReportsChecker />} />
+              <Route path="/logs-and-reports/excise-tax-schedule-returns" element={<ExciseTaxScheduleReturns />} />
+              <Route path="/logs-and-reports/ws-pay-gov-chrome-extension" element={<WSPayGovChromeExtension />} />
+              <Route path="/logs-and-reports/whiskey-system-logs" element={<WhiskeySystemLogs />} />
+              <Route path="/logs-and-reports/daily-logs" element={<DailyLogs />} />
+              
+              {/* Administrator subcategories */}
+              <Route path="/administrator/delete-transactions" element={<DeleteTransactions />} />
+              <Route path="/administrator/quickbooks-export" element={<QuickBooksExport />} />
+              <Route path="/administrator/manage-users" element={<ManageUsers />} />
+              
+              {/* Settings subcategories */}
+              <Route path="/settings/dsp-settings-and-info" element={<DSPSettingsAndInfo />} />
+              <Route path="/settings/whiskey-kinds" element={<WhiskeyKinds />} />
+              <Route path="/settings/ttb-material-kinds" element={<TTBMaterialKinds />} />
+              <Route path="/settings/base-tax-rates" element={<BaseTaxRates />} />
+              <Route path="/settings/raw-materials" element={<SettingsRawMaterials />} />
+              <Route path="/settings/internal-spirit-types" element={<InternalSpiritTypes />} />
+              <Route path="/settings/mash-bills" element={<MashBills />} />
+              <Route path="/settings/recipes" element={<Recipes />} />
+              <Route path="/settings/product-lines" element={<ProductLines />} />
+              <Route path="/settings/product-masters" element={<ProductMasters />} />
+              <Route path="/settings/mixed-product-masters" element={<MixedProductMasters />} />
+              <Route path="/settings/fermenters" element={<Fermenters />} />
+              <Route path="/settings/tanks" element={<SettingsTanks />} />
+              <Route path="/settings/vendors" element={<Vendors />} />
+              <Route path="/settings/customers" element={<Customers />} />
+              <Route path="/settings/contacts" element={<Contacts />} />
+              <Route path="/settings/dsps" element={<DSPs />} />
+              <Route path="/settings/owners" element={<Owners />} />
+              <Route path="/settings/linked-distilleries" element={<LinkedDistilleries />} />
+              <Route path="/settings/rackhouses" element={<Rackhouses />} />
+              <Route path="/settings/warehouses" element={<Warehouses />} />
+              <Route path="/settings/starting-tanks" element={<StartingTanks />} />
+              <Route path="/settings/starting-finished-goods" element={<StartingFinishedGoods />} />
+              <Route path="/settings/starting-raw-materials" element={<StartingRawMaterials />} />
+              <Route path="/settings/starting-onsite-barrels" element={<StartingOnsiteBarrels />} />
+              <Route path="/settings/starting-offsite-barrels" element={<StartingOffsiteBarrels />} />
               
               {/* Production subcategories */}
               <Route path="/production/fermentation-scrap-log" element={<FermentationScrapLog />} />
