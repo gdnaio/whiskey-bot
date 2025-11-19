@@ -97,14 +97,13 @@ import UpdateLog from './pages/Barrels/UpdateLog'
 import EmptyBarrels from './pages/Barrels/EmptyBarrels'
 
 // Production pages (only category with subcategories)
-import FermentationScrapLog from './pages/Production/FermentationScrapLog'
+import NewFermentation from './pages/Production/NewFermentation'
 import FermentationLog from './pages/Production/FermentationLog'
-import FermentationCooks from './pages/Production/FermentationCooks'
 import FermenterStatus from './pages/Production/FermenterStatus'
-import FermentationReports from './pages/Production/FermentationReports'
+import FermMoveLog from './pages/Production/FermMoveLog'
+import FermentationScrapLog from './pages/Production/FermentationScrapLog'
 import NewDistillation from './pages/Production/NewDistillation'
 import DistillationLog from './pages/Production/DistillationLog'
-import Distillation from './pages/Production/Distillation'
 
 function App() {
   return (
@@ -211,14 +210,13 @@ function App() {
               <Route path="/settings/starting-offsite-barrels" element={<StartingOffsiteBarrels />} />
               
               {/* Production subcategories */}
-              <Route path="/production/fermentation-scrap-log" element={<FermentationScrapLog />} />
+              <Route path="/production/new-fermentation" element={<NewFermentation />} />
               <Route path="/production/fermentation-log" element={<FermentationLog />} />
-              <Route path="/production/fermentation-cooks" element={<FermentationCooks />} />
               <Route path="/production/fermenter-status" element={<FermenterStatus />} />
-              <Route path="/production/fermentation-reports" element={<FermentationReports />} />
+              <Route path="/production/ferm-move-log" element={<FermMoveLog />} />
+              <Route path="/production/fermentation-scrap-log" element={<FermentationScrapLog />} />
               <Route path="/production/new-distillation" element={<NewDistillation />} />
               <Route path="/production/distillation-log" element={<DistillationLog />} />
-              <Route path="/production/distillation" element={<Distillation />} />
             </Routes>
           </main>
         </div>

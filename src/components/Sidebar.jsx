@@ -12,14 +12,13 @@ const navigation = [
     name: 'Production',
     path: '/production',
     subcategories: [
-      { name: 'Fermentation Scrap Log', path: '/production/fermentation-scrap-log' },
+      { name: 'New Fermentation', path: '/production/new-fermentation' },
       { name: 'Fermentation Log', path: '/production/fermentation-log' },
-      { name: 'Fermentation Cooks', path: '/production/fermentation-cooks' },
       { name: 'Fermenter Status', path: '/production/fermenter-status' },
-      { name: 'Fermentation Reports', path: '/production/fermentation-reports' },
+      { name: 'Ferm. Move Log', path: '/production/ferm-move-log' },
+      { name: 'Scrapped Ferm. Log', path: '/production/fermentation-scrap-log' },
       { name: 'New Distillation', path: '/production/new-distillation' },
       { name: 'Distillation Log', path: '/production/distillation-log' },
-      { name: 'Distillation', path: '/production/distillation' },
     ]
   },
   {
