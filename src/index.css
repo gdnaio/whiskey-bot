@@ -14,3 +14,68 @@
   }
 }
 
+/* Custom Scrollbar Styling */
+@layer utilities {
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(22, 33, 62, 0.3); /* accent-blue with transparency */
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #16213e, #1e3a5f); /* accent-blue gradient */
+    border-radius: 10px;
+    border: 1px solid rgba(212, 175, 55, 0.2); /* subtle gold border */
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #1e3a5f, #16213e);
+    border-color: rgba(212, 175, 55, 0.4); /* brighter gold on hover */
+  }
+
+  /* Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #16213e rgba(22, 33, 62, 0.3);
+  }
+}
+
+/* Main content area scrollbar */
+@layer utilities {
+  /* Webkit browsers */
+  body::-webkit-scrollbar,
+  main::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  body::-webkit-scrollbar-track,
+  main::-webkit-scrollbar-track {
+    background: rgba(15, 15, 30, 0.5); /* primary-dark with transparency */
+    border-radius: 10px;
+  }
+
+  body::-webkit-scrollbar-thumb,
+  main::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #16213e, #1e3a5f);
+    border-radius: 10px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+  }
+
+  body::-webkit-scrollbar-thumb:hover,
+  main::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #1e3a5f, #16213e);
+    border-color: rgba(212, 175, 55, 0.4);
+  }
+
+  /* Firefox */
+  body,
+  main {
+    scrollbar-width: thin;
+    scrollbar-color: #16213e rgba(15, 15, 30, 0.5);
+  }
+}
+

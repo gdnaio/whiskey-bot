@@ -2,6 +2,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import TopBar from './components/TopBar'
 import Home from './pages/Home'
+import Profile from './pages/Profile'
+import AccountSettings from './pages/AccountSettings'
+import Preferences from './pages/Preferences'
+import HelpSupport from './pages/HelpSupport'
 
 // Main category pages
 import RawMaterials from './pages/RawMaterials'
@@ -14,7 +18,9 @@ import TTBMaterialKinds from './pages/Settings/TTBMaterialKinds'
 import BaseTaxRates from './pages/Settings/BaseTaxRates'
 import SettingsRawMaterials from './pages/Settings/RawMaterials'
 import InternalSpiritTypes from './pages/Settings/InternalSpiritTypes'
+import NewInternalSpiritType from './pages/Settings/NewInternalSpiritType'
 import MashBills from './pages/Settings/MashBills'
+import NewMashBill from './pages/Settings/NewMashBill'
 import Recipes from './pages/Settings/Recipes'
 import ProductLines from './pages/Settings/ProductLines'
 import ProductMasters from './pages/Settings/ProductMasters'
@@ -108,13 +114,19 @@ import DistillationLog from './pages/Production/DistillationLog'
 function App() {
   return (
     <Router>
-      <div className="flex h-screen overflow-hidden bg-primary-dark">
+      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-primary-dark via-primary-dark to-primary">
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <TopBar />
-          <main className="flex-1 overflow-y-auto p-6">
+          <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-primary-dark/50 to-primary-dark">
             <Routes>
               <Route path="/" element={<Home />} />
+              
+              {/* User Account Pages */}
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/account-settings" element={<AccountSettings />} />
+              <Route path="/preferences" element={<Preferences />} />
+              <Route path="/help-support" element={<HelpSupport />} />
               
               {/* Main category pages */}
               <Route path="/raw-materials" element={<RawMaterials />} />
@@ -188,7 +200,9 @@ function App() {
               <Route path="/settings/base-tax-rates" element={<BaseTaxRates />} />
               <Route path="/settings/raw-materials" element={<SettingsRawMaterials />} />
               <Route path="/settings/internal-spirit-types" element={<InternalSpiritTypes />} />
+              <Route path="/settings/new-internal-spirit-type" element={<NewInternalSpiritType />} />
               <Route path="/settings/mash-bills" element={<MashBills />} />
+              <Route path="/settings/new-mash-bill" element={<NewMashBill />} />
               <Route path="/settings/recipes" element={<Recipes />} />
               <Route path="/settings/product-lines" element={<ProductLines />} />
               <Route path="/settings/product-masters" element={<ProductMasters />} />

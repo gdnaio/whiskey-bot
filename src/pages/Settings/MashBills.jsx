@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function MashBills() {
+  const navigate = useNavigate()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
   const totalItems = 0 // No data initially
@@ -22,7 +24,10 @@ function MashBills() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-4xl font-bold text-accent-gold">Mash Bills</h1>
         <div className="flex gap-3">
-          <button className="px-4 py-2 bg-accent-gold text-primary-dark rounded hover:bg-accent-gold-light transition-smooth font-medium">
+          <button 
+            onClick={() => navigate('/settings/new-mash-bill')}
+            className="px-4 py-2 bg-accent-gold text-primary-dark rounded hover:bg-accent-gold-light transition-smooth font-medium"
+          >
             ADD NEW MASH BILL
           </button>
           <button className="px-4 py-2 bg-primary-DEFAULT border border-accent-blue text-gray-300 rounded hover:bg-primary-light transition-smooth font-medium">

@@ -4,11 +4,6 @@ import { Link, useLocation } from 'react-router-dom'
 // Navigation structure with categories and subcategories
 const navigation = [
   {
-    name: 'Raw Materials',
-    path: '/raw-materials',
-    subcategories: []
-  },
-  {
     name: 'Production',
     path: '/production',
     subcategories: [
@@ -189,7 +184,7 @@ function Sidebar() {
       {/* Mobile menu button */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-primary-light text-accent-gold hover:bg-accent-blue transition-smooth"
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 rounded-xl bg-gradient-to-br from-primary-light to-primary-dark border border-accent-blue/50 text-accent-gold hover:bg-accent-blue hover:border-accent-gold/50 transition-all duration-200 shadow-lg"
         aria-label="Toggle menu"
       >
         {isMobileOpen ? (
@@ -207,13 +202,33 @@ function Sidebar() {
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-40
-          w-64 bg-primary border-r border-accent-blue
-          transform transition-transform duration-300 ease-in-out
+          w-64 bg-gradient-to-b from-primary via-primary to-primary-dark border-r border-accent-blue/50
+          transform transition-transform duration-300 ease-in-out shadow-xl
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         <div className="h-full flex flex-col pt-16 lg:pt-4">
-          <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
+          <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2 custom-scrollbar">
+            {/* Home Link */}
+            <Link
+              to="/"
+              onClick={() => setIsMobileOpen(false)}
+              className={`
+                block px-4 py-3 rounded-xl transition-all duration-200 mb-4
+                ${isActive('/')
+                  ? 'bg-gradient-to-r from-accent-blue to-accent-blue-light text-accent-gold font-semibold shadow-lg shadow-accent-gold/20'
+                  : 'text-gray-300 hover:bg-primary-light hover:text-accent-gold hover:translate-x-1'
+                }
+              `}
+            >
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span className="font-medium">Home</span>
+              </div>
+            </Link>
+            
             {navigation.map((category) => {
               const shouldBeExpanded = (cat) => {
                 return cat.subcategories.some(sub => location.pathname === sub.path)
@@ -228,17 +243,17 @@ function Sidebar() {
                       <button
                         onClick={() => toggleCategory(category.name)}
                         className={`
-                          w-full flex items-center justify-between px-4 py-3 rounded-lg
-                          transition-smooth text-left
+                          w-full flex items-center justify-between px-4 py-3 rounded-xl
+                          transition-all duration-200 text-left group
                           ${isCategoryActive(category)
-                            ? 'bg-accent-blue text-accent-gold font-semibold'
-                            : 'text-gray-300 hover:bg-primary-light hover:text-accent-gold'
+                            ? 'bg-gradient-to-r from-accent-blue to-accent-blue-light text-accent-gold font-semibold shadow-lg shadow-accent-gold/20'
+                            : 'text-gray-300 hover:bg-primary-light hover:text-accent-gold hover:translate-x-1'
                           }
                         `}
                       >
                         <span>{category.name}</span>
                         <svg 
-                          className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+                          className={`h-4 w-4 transition-all duration-200 ${isExpanded ? 'rotate-90 text-accent-gold' : 'text-gray-400 group-hover:text-accent-gold'}`} 
                           fill="none" 
                           viewBox="0 0 24 24" 
                           stroke="currentColor"
@@ -247,17 +262,17 @@ function Sidebar() {
                         </svg>
                       </button>
                       {isExpanded && (
-                        <div className="ml-4 mt-1 space-y-1">
+                        <div className="ml-4 mt-2 space-y-1 border-l-2 border-accent-blue/30 pl-3">
                           {category.subcategories.map((subcategory) => (
                             <Link
                               key={subcategory.path}
                               to={subcategory.path}
                               onClick={() => setIsMobileOpen(false)}
                               className={`
-                                block px-4 py-2 rounded-lg text-sm transition-smooth
+                                block px-4 py-2.5 rounded-lg text-sm transition-all duration-200 relative
                                 ${isActive(subcategory.path)
-                                  ? 'bg-accent-blue-light text-accent-gold font-medium'
-                                  : 'text-gray-400 hover:bg-primary-light hover:text-gray-200'
+                                  ? 'bg-gradient-to-r from-accent-blue/50 to-accent-blue-light/30 text-accent-gold font-medium shadow-md border-l-2 border-accent-gold'
+                                  : 'text-gray-400 hover:bg-primary-light/50 hover:text-gray-200 hover:translate-x-1'
                                 }
                               `}
                             >
@@ -272,10 +287,10 @@ function Sidebar() {
                       to={category.path}
                       onClick={() => setIsMobileOpen(false)}
                       className={`
-                        block px-4 py-3 rounded-lg transition-smooth
+                        block px-4 py-3 rounded-xl transition-all duration-200
                         ${isActive(category.path)
-                          ? 'bg-accent-blue text-accent-gold font-semibold'
-                          : 'text-gray-300 hover:bg-primary-light hover:text-accent-gold'
+                          ? 'bg-gradient-to-r from-accent-blue to-accent-blue-light text-accent-gold font-semibold shadow-lg shadow-accent-gold/20'
+                          : 'text-gray-300 hover:bg-primary-light hover:text-accent-gold hover:translate-x-1'
                         }
                       `}
                     >

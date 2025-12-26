@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function InternalSpiritTypes() {
+  const navigate = useNavigate()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
   const totalItems = 0 // No data initially
@@ -22,7 +24,10 @@ function InternalSpiritTypes() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-4xl font-bold text-accent-gold">Internal Spirit Types</h1>
         <div className="flex gap-3">
-          <button className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-smooth font-medium">
+          <button 
+            onClick={() => navigate('/settings/new-internal-spirit-type')}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-smooth font-medium"
+          >
             + ADD NEW INTERNAL SPIRIT TYPE
           </button>
           <button className="px-4 py-2 bg-primary-DEFAULT border border-accent-blue text-gray-300 rounded hover:bg-primary-light transition-smooth font-medium">
