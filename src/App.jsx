@@ -17,6 +17,8 @@ import WhiskeyKinds from './pages/Settings/WhiskeyKinds'
 import TTBMaterialKinds from './pages/Settings/TTBMaterialKinds'
 import BaseTaxRates from './pages/Settings/BaseTaxRates'
 import SettingsRawMaterials from './pages/Settings/RawMaterials'
+import RawMaterialBOM from './pages/Settings/RawMaterialBOM'
+import CreateBOMItem from './pages/Settings/CreateBOMItem'
 import InternalSpiritTypes from './pages/Settings/InternalSpiritTypes'
 import NewInternalSpiritType from './pages/Settings/NewInternalSpiritType'
 import MashBills from './pages/Settings/MashBills'
@@ -199,6 +201,8 @@ function App() {
               <Route path="/settings/ttb-material-kinds" element={<TTBMaterialKinds />} />
               <Route path="/settings/base-tax-rates" element={<BaseTaxRates />} />
               <Route path="/settings/raw-materials" element={<SettingsRawMaterials />} />
+              <Route path="/settings/raw-material-bom" element={<RawMaterialBOM />} />
+              <Route path="/settings/create-bom-item" element={<CreateBOMItem />} />
               <Route path="/settings/internal-spirit-types" element={<InternalSpiritTypes />} />
               <Route path="/settings/new-internal-spirit-type" element={<NewInternalSpiritType />} />
               <Route path="/settings/mash-bills" element={<MashBills />} />

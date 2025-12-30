@@ -45,11 +45,34 @@ function NewMashBill() {
     setIngredients(ingredients.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: Implement actual submission logic
-    console.log('Form submitted:', { formData, ingredients })
-    navigate('/settings/mash-bills')
+    try {
+      // Example: Save to DynamoDB
+      // Uncomment and configure when ready:
+      /*
+      import dynamoDBService from '../../services/dynamodb'
+      
+      const mashBillData = {
+        id: crypto.randomUUID(), // Generate unique ID
+        ...formData,
+        ingredients,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      
+      await dynamoDBService.putItem(
+        import.meta.env.VITE_TABLE_MASH_BILLS || 'mash-bills',
+        mashBillData
+      )
+      */
+      
+      console.log('Form submitted:', { formData, ingredients })
+      navigate('/settings/mash-bills')
+    } catch (error) {
+      console.error('Error saving mash bill:', error)
+      alert('Failed to save mash bill. Please try again.')
+    }
   }
 
   const handleCancel = () => {
