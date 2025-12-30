@@ -25,6 +25,7 @@ import MashBills from './pages/Settings/MashBills'
 import NewMashBill from './pages/Settings/NewMashBill'
 import Recipes from './pages/Settings/Recipes'
 import ProductLines from './pages/Settings/ProductLines'
+import CreateProductLine from './pages/Settings/CreateProductLine'
 import ProductMasters from './pages/Settings/ProductMasters'
 import MixedProductMasters from './pages/Settings/MixedProductMasters'
 import Fermenters from './pages/Settings/Fermenters'
@@ -209,6 +210,7 @@ function App() {
               <Route path="/settings/new-mash-bill" element={<NewMashBill />} />
               <Route path="/settings/recipes" element={<Recipes />} />
               <Route path="/settings/product-lines" element={<ProductLines />} />
+              <Route path="/settings/create-product-line" element={<CreateProductLine />} />
               <Route path="/settings/product-masters" element={<ProductMasters />} />
               <Route path="/settings/mixed-product-masters" element={<MixedProductMasters />} />
               <Route path="/settings/fermenters" element={<Fermenters />} />
