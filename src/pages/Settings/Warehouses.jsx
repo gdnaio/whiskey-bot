@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function Warehouses() {
+  const navigate = useNavigate()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
   const totalItems = 0 // No data initially
@@ -22,7 +24,13 @@ function Warehouses() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-4xl font-bold text-accent-gold">Warehouses</h1>
         <div className="flex gap-3">
-          <button className="px-4 py-2 bg-accent-gold text-primary-dark rounded hover:bg-accent-gold-light transition-smooth font-medium">
+          <button 
+            onClick={() => navigate('/settings/create-warehouse')}
+            className="px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200 font-semibold shadow-lg flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
             ADD NEW WAREHOUSE
           </button>
           <button className="px-4 py-2 bg-primary-DEFAULT border border-accent-blue text-gray-300 rounded hover:bg-primary-light transition-smooth font-medium">

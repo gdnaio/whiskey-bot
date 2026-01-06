@@ -38,9 +38,11 @@ import Owners from './pages/Settings/Owners'
 import LinkedDistilleries from './pages/Settings/LinkedDistilleries'
 import Rackhouses from './pages/Settings/Rackhouses'
 import Warehouses from './pages/Settings/Warehouses'
+import CreateWarehouse from './pages/Settings/CreateWarehouse'
 import StartingTanks from './pages/Settings/StartingTanks'
 import StartingFinishedGoods from './pages/Settings/StartingFinishedGoods'
 import StartingRawMaterials from './pages/Settings/StartingRawMaterials'
+import CreateInventoryItem from './pages/Settings/CreateInventoryItem'
 import StartingOnsiteBarrels from './pages/Settings/StartingOnsiteBarrels'
 import StartingOffsiteBarrels from './pages/Settings/StartingOffsiteBarrels'
 
@@ -223,9 +225,11 @@ function App() {
               <Route path="/settings/linked-distilleries" element={<LinkedDistilleries />} />
               <Route path="/settings/rackhouses" element={<Rackhouses />} />
               <Route path="/settings/warehouses" element={<Warehouses />} />
+              <Route path="/settings/create-warehouse" element={<CreateWarehouse />} />
               <Route path="/settings/starting-tanks" element={<StartingTanks />} />
               <Route path="/settings/starting-finished-goods" element={<StartingFinishedGoods />} />
               <Route path="/settings/starting-raw-materials" element={<StartingRawMaterials />} />
+              <Route path="/settings/create-inventory-item" element={<CreateInventoryItem />} />
               <Route path="/settings/starting-onsite-barrels" element={<StartingOnsiteBarrels />} />
               <Route path="/settings/starting-offsite-barrels" element={<StartingOffsiteBarrels />} />
               

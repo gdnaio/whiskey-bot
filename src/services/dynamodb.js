@@ -165,3 +165,4 @@ class DynamoDBService {
 export const dynamoDBService = new DynamoDBService()
 export default dynamoDBService
 
+
