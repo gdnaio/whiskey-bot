@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dynamoDBService from '../../services/dynamodb'
+import useUserId from '../../hooks/useUserId'
 
 function FermentationLog() {
   const navigate = useNavigate()
+  const userId = useUserId()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
   const [fermentationLogs, setFermentationLogs] = useState([])
@@ -16,13 +18,18 @@ function FermentationLog() {
   }, [])
 
   const loadFermentationLogs = async () => {
+    if (!userId) {
+      setError('You must be signed in to load fermentation logs.')
+      setLoading(false)
+      return
+    }
     try {
       setLoading(true)
       setError(null)
       // Load from both fermentation_logs and fermentation_cooks tables
       const [logs, cooks] = await Promise.all([
-        dynamoDBService.scanTable('fermentation_logs').catch(() => []),
-        dynamoDBService.scanTable('fermentation_cooks').catch(() => [])
+        dynamoDBService.scanTable('fermentation_logs', userId).catch(() => []),
+        dynamoDBService.scanTable('fermentation_cooks', userId).catch(() => [])
       ])
       
       // Combine and sort by timestamp (newest first)
@@ -42,11 +49,15 @@ function FermentationLog() {
   }
 
   const handleDelete = async (id) => {
+    if (!userId) {
+      alert('You must be signed in to delete fermentation logs.')
+      return
+    }
     if (!window.confirm('Are you sure you want to delete this fermentation log entry?')) {
       return
     }
     try {
-      await dynamoDBService.deleteItem('fermentation_logs', { id })
+      await dynamoDBService.deleteItem('fermentation_logs', { id }, userId)
       loadFermentationLogs()
     } catch (err) {
       console.error('Error deleting fermentation log:', err)

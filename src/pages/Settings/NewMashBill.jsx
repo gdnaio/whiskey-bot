@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import dynamoDBService from '../../services/dynamodb'
+import useUserId from '../../hooks/useUserId'
 
 function NewMashBill() {
   const navigate = useNavigate()
   const location = useLocation()
   const editData = location.state?.edit
+  const userId = useUserId()
   
   const [formData, setFormData] = useState({
     mashBillName: '',
@@ -92,7 +94,11 @@ function NewMashBill() {
         mashBillData.createdAt = new Date().toISOString()
       }
       
-      await dynamoDBService.putItem('mash_bills', mashBillData)
+      if (!userId) {
+        alert('You must be signed in to save mash bills.')
+        return
+      }
+      await dynamoDBService.putItem('mash_bills', mashBillData, userId)
       navigate('/settings/mash-bills')
     } catch (error) {
       console.error('Error saving mash bill:', error)

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import dynamoDBService from '../../services/dynamodb'
+import useUserId from '../../hooks/useUserId'
 
 function WhiskeyKinds() {
+  const userId = useUserId()
   const [whiskeyKinds, setWhiskeyKinds] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -12,10 +14,15 @@ function WhiskeyKinds() {
   }, [])
 
   const loadWhiskeyKinds = async () => {
+    if (!userId) {
+      setError('You must be signed in to load whiskey kinds.')
+      setLoading(false)
+      return
+    }
     try {
       setLoading(true)
       setError(null)
-      const items = await dynamoDBService.scanTable('whiskey_kinds')
+      const items = await dynamoDBService.scanTable('whiskey_kinds', userId)
       // Sort by rowNumber
       items.sort((a, b) => (a.rowNumber || 999) - (b.rowNumber || 999))
       
@@ -37,7 +44,7 @@ function WhiskeyKinds() {
             ...kind,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-          })
+          }, userId)
         }
         setWhiskeyKinds(defaultKinds)
       } else {
@@ -79,11 +86,15 @@ function WhiskeyKinds() {
   }
 
   const updateWhiskeyKind = async (id, updatedData) => {
+    if (!userId) {
+      alert('You must be signed in to update whiskey kinds.')
+      return
+    }
     try {
       await dynamoDBService.putItem('whiskey_kinds', {
         ...updatedData,
         updatedAt: new Date().toISOString(),
-      })
+      }, userId)
       loadWhiskeyKinds() // Reload the list
     } catch (err) {
       console.error('Error updating whiskey kind:', err)

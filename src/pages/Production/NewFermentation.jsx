@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dynamoDBService from '../../services/dynamodb'
+import useUserId from '../../hooks/useUserId'
 
 function NewFermentation() {
   const navigate = useNavigate()
+  const userId = useUserId()
   const [mashBills, setMashBills] = useState([])
   const [loadingMashBills, setLoadingMashBills] = useState(true)
 
@@ -41,9 +43,13 @@ function NewFermentation() {
   }, [])
 
   const loadMashBills = async () => {
+    if (!userId) {
+      setLoadingMashBills(false)
+      return
+    }
     try {
       setLoadingMashBills(true)
-      const items = await dynamoDBService.scanTable('mash_bills')
+      const items = await dynamoDBService.scanTable('mash_bills', userId)
       items.sort((a, b) => {
         const orderA = a.sortOrder || 999
         const orderB = b.sortOrder || 999
@@ -137,7 +143,11 @@ function NewFermentation() {
         updatedAt: new Date().toISOString(),
       }
       
-      await dynamoDBService.putItem('fermentation_cooks', cookData)
+      if (!userId) {
+        alert('You must be signed in to save fermentation cooks.')
+        return
+      }
+      await dynamoDBService.putItem('fermentation_cooks', cookData, userId)
       
       // Navigate to step 2 (for now, just go to fermentation log)
       // TODO: Navigate to Step 2 of 2 when implemented

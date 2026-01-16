@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import dynamoDBService from '../../services/dynamodb'
+import useUserId from '../../hooks/useUserId'
 
 function CreateWarehouse() {
   const navigate = useNavigate()
   const location = useLocation()
   const editData = location.state?.edit
+  const userId = useUserId()
   
   const [formData, setFormData] = useState({
     // Warehouse Section
@@ -90,7 +92,11 @@ function CreateWarehouse() {
         warehouseData.createdAt = new Date().toISOString()
       }
       
-      await dynamoDBService.putItem('warehouses', warehouseData)
+      if (!userId) {
+        alert('You must be signed in to save warehouses.')
+        return
+      }
+      await dynamoDBService.putItem('warehouses', warehouseData, userId)
       
       // Navigate back to warehouses list
       navigate('/settings/warehouses')

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dynamoDBService from '../../services/dynamodb'
+import useUserId from '../../hooks/useUserId'
 
 function Warehouses() {
   const navigate = useNavigate()
+  const userId = useUserId()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
   const [warehouses, setWarehouses] = useState([])
@@ -16,10 +18,15 @@ function Warehouses() {
   }, [])
 
   const loadWarehouses = async () => {
+    if (!userId) {
+      setError('You must be signed in to load warehouses.')
+      setLoading(false)
+      return
+    }
     try {
       setLoading(true)
       setError(null)
-      const items = await dynamoDBService.scanTable('warehouses')
+      const items = await dynamoDBService.scanTable('warehouses', userId)
       // Sort by sortOrder, then by name
       items.sort((a, b) => {
         const orderA = a.sortOrder || 999
@@ -37,11 +44,15 @@ function Warehouses() {
   }
 
   const handleDelete = async (id) => {
+    if (!userId) {
+      alert('You must be signed in to delete warehouses.')
+      return
+    }
     if (!window.confirm('Are you sure you want to delete this warehouse?')) {
       return
     }
     try {
-      await dynamoDBService.deleteItem('warehouses', { id })
+      await dynamoDBService.deleteItem('warehouses', { id }, userId)
       // Reload warehouses
       loadWarehouses()
     } catch (err) {

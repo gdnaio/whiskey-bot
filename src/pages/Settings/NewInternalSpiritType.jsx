@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import dynamoDBService from '../../services/dynamodb'
+import useUserId from '../../hooks/useUserId'
 
 function NewInternalSpiritType() {
   const navigate = useNavigate()
   const location = useLocation()
   const editData = location.state?.edit
+  const userId = useUserId()
   const [whiskeyKinds, setWhiskeyKinds] = useState([])
   const [loadingWhiskeyKinds, setLoadingWhiskeyKinds] = useState(true)
   
@@ -32,9 +34,13 @@ function NewInternalSpiritType() {
   }, [])
 
   const loadWhiskeyKinds = async () => {
+    if (!userId) {
+      setLoadingWhiskeyKinds(false)
+      return
+    }
     try {
       setLoadingWhiskeyKinds(true)
-      const items = await dynamoDBService.scanTable('whiskey_kinds')
+      const items = await dynamoDBService.scanTable('whiskey_kinds', userId)
       // Filter out duplicates and empty entries, then sort by rowNumber
       const uniqueItems = items
         .filter(item => item.typeName && item.typeName !== '—' && item.typeName.trim() !== '')
@@ -150,7 +156,11 @@ function NewInternalSpiritType() {
       }
       
       // Save to DynamoDB
-      await dynamoDBService.putItem('internal_spirit_types', spiritTypeData)
+      if (!userId) {
+        alert('You must be signed in to save spirit types.')
+        return
+      }
+      await dynamoDBService.putItem('internal_spirit_types', spiritTypeData, userId)
       
       // Show success message and navigate
       alert('Internal spirit type saved successfully!')

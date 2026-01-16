@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import dynamoDBService from '../services/dynamodb'
+import useUserId from '../hooks/useUserId'
 
 function TestDynamoDB() {
+  const userId = useUserId()
   const [status, setStatus] = useState('Testing connection...')
   const [testResult, setTestResult] = useState(null)
   const [warehouses, setWarehouses] = useState([])
@@ -13,6 +15,14 @@ function TestDynamoDB() {
   }, [])
 
   const testConnection = async () => {
+    if (!userId) {
+      setStatus('❌ You must be signed in to test DynamoDB connection')
+      setTestResult({
+        success: false,
+        message: 'Authentication required'
+      })
+      return
+    }
     try {
       setStatus('Testing AWS credentials...')
       
@@ -26,11 +36,11 @@ function TestDynamoDB() {
       }
       
       setStatus('Writing test item to DynamoDB...')
-      await dynamoDBService.putItem('warehouses', testData)
+      await dynamoDBService.putItem('warehouses', testData, userId)
       
       // Test 2: Read it back
       setStatus('Reading test item from DynamoDB...')
-      const retrieved = await dynamoDBService.getItem('warehouses', { id: testId })
+      const retrieved = await dynamoDBService.getItem('warehouses', { id: testId }, userId)
       
       if (retrieved && retrieved.id === testId) {
         setStatus('✅ Connection successful!')
@@ -58,10 +68,14 @@ function TestDynamoDB() {
   }
 
   const loadWarehouses = async () => {
+    if (!userId) {
+      setStatus('❌ You must be signed in to load warehouses')
+      return
+    }
     try {
       setLoading(true)
       setStatus('Loading warehouses from DynamoDB...')
-      const items = await dynamoDBService.scanTable('warehouses')
+      const items = await dynamoDBService.scanTable('warehouses', userId)
       setWarehouses(items)
       setStatus(`✅ Loaded ${items.length} warehouse(s)`)
       setLoading(false)
@@ -73,8 +87,12 @@ function TestDynamoDB() {
   }
 
   const deleteTestItem = async (id) => {
+    if (!userId) {
+      setStatus('❌ You must be signed in to delete items')
+      return
+    }
     try {
-      await dynamoDBService.deleteItem('warehouses', { id })
+      await dynamoDBService.deleteItem('warehouses', { id }, userId)
       setStatus(`✅ Deleted test item: ${id}`)
       loadWarehouses() // Reload list
     } catch (error) {

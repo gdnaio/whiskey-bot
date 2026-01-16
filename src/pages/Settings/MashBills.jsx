@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dynamoDBService from '../../services/dynamodb'
+import useUserId from '../../hooks/useUserId'
 
 function MashBills() {
   const navigate = useNavigate()
+  const userId = useUserId()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
   const [mashBills, setMashBills] = useState([])
@@ -16,10 +18,15 @@ function MashBills() {
   }, [])
 
   const loadMashBills = async () => {
+    if (!userId) {
+      setError('You must be signed in to load mash bills.')
+      setLoading(false)
+      return
+    }
     try {
       setLoading(true)
       setError(null)
-      const items = await dynamoDBService.scanTable('mash_bills')
+      const items = await dynamoDBService.scanTable('mash_bills', userId)
       // Sort by sortOrder, then by name
       items.sort((a, b) => {
         const orderA = a.sortOrder || 999
@@ -37,11 +44,15 @@ function MashBills() {
   }
 
   const handleDelete = async (id) => {
+    if (!userId) {
+      alert('You must be signed in to delete mash bills.')
+      return
+    }
     if (!window.confirm('Are you sure you want to delete this mash bill?')) {
       return
     }
     try {
-      await dynamoDBService.deleteItem('mash_bills', { id })
+      await dynamoDBService.deleteItem('mash_bills', { id }, userId)
       loadMashBills()
     } catch (err) {
       console.error('Error deleting mash bill:', err)

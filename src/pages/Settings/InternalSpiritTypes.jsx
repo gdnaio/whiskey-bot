@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dynamoDBService from '../../services/dynamodb'
+import useUserId from '../../hooks/useUserId'
 
 function InternalSpiritTypes() {
   const navigate = useNavigate()
+  const userId = useUserId()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
   const [spiritTypes, setSpiritTypes] = useState([])
@@ -16,10 +18,15 @@ function InternalSpiritTypes() {
   }, [])
 
   const loadSpiritTypes = async () => {
+    if (!userId) {
+      setError('You must be signed in to load spirit types.')
+      setLoading(false)
+      return
+    }
     try {
       setLoading(true)
       setError(null)
-      const items = await dynamoDBService.scanTable('internal_spirit_types')
+      const items = await dynamoDBService.scanTable('internal_spirit_types', userId)
       // Sort by sortOrder, then by name
       items.sort((a, b) => {
         const orderA = a.sortOrder || 999
@@ -37,11 +44,15 @@ function InternalSpiritTypes() {
   }
 
   const handleDelete = async (id) => {
+    if (!userId) {
+      alert('You must be signed in to delete spirit types.')
+      return
+    }
     if (!window.confirm('Are you sure you want to delete this internal spirit type?')) {
       return
     }
     try {
-      await dynamoDBService.deleteItem('internal_spirit_types', { id })
+      await dynamoDBService.deleteItem('internal_spirit_types', { id }, userId)
       loadSpiritTypes()
     } catch (err) {
       console.error('Error deleting spirit type:', err)
