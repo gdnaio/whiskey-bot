@@ -1,42 +1,53 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import dynamoDBService from '../../services/dynamodb'
 
 function InternalSpiritTypes() {
   const navigate = useNavigate()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
-  
-  const spiritTypes = [
-    { id: 1, name: 'Absinthe', hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'CordialsLiqueursSpecial..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 2, name: 'Agave Spirit', hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Other', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 3, name: 'Barrel Aged Rum', hide: false, sort: 1, reportingCategory: 'Rum', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'RumDomestic', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 4, name: 'Bourbon', hide: false, sort: 1, reportingCategory: 'Whiskey160And...', ifWhiskey: 'Bourbon', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 5, name: 'Bourbon Cream', hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'CordialsLiqueursSpecial..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 6, name: 'Costa Gin', hide: false, sort: 1, reportingCategory: 'Gin', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Other', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 7, name: 'Cream Base', hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'CordialsLiqueursSpecial..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 8, name: 'Crosstown Bottle In Bond Rye', hide: false, sort: 1, reportingCategory: 'Whiskey160And...', ifWhiskey: 'Rye', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 9, name: 'Crosstown Straight Rye M-1', hide: false, sort: 1, reportingCategory: 'Whiskey160And...', ifWhiskey: 'Rye', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 10, name: 'Danko Rye', hide: false, sort: 1, reportingCategory: 'Whiskey160And...', ifWhiskey: 'Rye', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 11, name: 'Hard Seltzer Stono', hide: false, sort: 1, reportingCategory: 'SpiritsUnder190', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Other', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 12, name: 'High Rye Bourbon', hide: false, sort: 1, reportingCategory: 'Whiskey160And...', ifWhiskey: 'Bourbon', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 13, name: "Jasper's Bourbon Barrel Gin", hide: false, sort: 1, reportingCategory: 'Gin', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Other', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 14, name: "Jasper's Gin", hide: false, sort: 1, reportingCategory: 'Gin', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Other', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 15, name: 'Light Whiskey', hide: false, sort: 1, reportingCategory: 'WhiskeyOver160', ifWhiskey: 'Light', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 16, name: 'M1 Bourbon', hide: false, sort: 1, reportingCategory: 'Whiskey160And...', ifWhiskey: 'Bourbon', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 17, name: 'M1 C-70 Rye', hide: false, sort: 1, reportingCategory: 'Whiskey160And...', ifWhiskey: 'Rye', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 18, name: 'M1 Rye', hide: false, sort: 1, reportingCategory: 'Whiskey160And...', ifWhiskey: 'Rye', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 19, name: 'Mocha Cream', hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'CordialsLiqueursSpecial..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 20, name: 'Peach Cream', hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'CordialsLiqueursSpecial..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 21, name: 'Pecan Liqueur', hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'CordialsLiqueursSpecial..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 22, name: 'Reaper Vodka', hide: false, sort: 1, reportingCategory: 'Vodka', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Vodka', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 23, name: "Reapers Temptation", hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'CordialsLiqueursSpecial..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 24, name: "Reapers Temptation2", hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'CordialsLiqueursSpecial..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 25, name: 'RS Rye', hide: false, sort: 1, reportingCategory: 'Whiskey160And...', ifWhiskey: 'Rye', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 26, name: 'Rum', hide: false, sort: 1, reportingCategory: 'Rum', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'RumDomestic', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 27, name: 'Rum Rye', hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Other', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 28, name: 'Single Malt Whiskey', hide: false, sort: 1, reportingCategory: 'Whiskey160And...', ifWhiskey: 'Bourbon', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'Domestic Whiskey160An..', wineProcessingBulk: false, imported: false, bottledImported: false },
-    { id: 29, name: 'Tolerance Liquor', hide: false, sort: 1, reportingCategory: 'Other', ifWhiskey: '', productionPart2: '', productionPart4: '', processingPart3: '', processingPart4: 'CordialsLiqueursSpecial..', wineProcessingBulk: false, imported: false, bottledImported: false },
-  ]
+  const [spiritTypes, setSpiritTypes] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Load spirit types from DynamoDB
+  useEffect(() => {
+    loadSpiritTypes()
+  }, [])
+
+  const loadSpiritTypes = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const items = await dynamoDBService.scanTable('internal_spirit_types')
+      // Sort by sortOrder, then by name
+      items.sort((a, b) => {
+        const orderA = a.sortOrder || 999
+        const orderB = b.sortOrder || 999
+        if (orderA !== orderB) return orderA - orderB
+        return (a.internalSpiritType || '').localeCompare(b.internalSpiritType || '')
+      })
+      setSpiritTypes(items)
+    } catch (err) {
+      console.error('Error loading spirit types:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this internal spirit type?')) {
+      return
+    }
+    try {
+      await dynamoDBService.deleteItem('internal_spirit_types', { id })
+      loadSpiritTypes()
+    } catch (err) {
+      console.error('Error deleting spirit type:', err)
+      alert(`Failed to delete spirit type: ${err.message}`)
+    }
+  }
 
   const totalItems = spiritTypes.length
   const totalPages = Math.ceil(totalItems / itemsPerPage)
@@ -55,24 +66,18 @@ function InternalSpiritTypes() {
     setCurrentPage(1)
   }
 
-  const handleDetails = (id) => {
-    console.log('View details for spirit type:', id)
-    // TODO: Implement details view
+  const handleDetails = (spiritType) => {
+    // TODO: Implement details view modal or page
+    console.log('View details for spirit type:', spiritType)
   }
 
-  const handleEdit = (id) => {
-    console.log('Edit spirit type:', id)
-    // TODO: Implement edit functionality
+  const handleEdit = (spiritType) => {
+    navigate('/settings/new-internal-spirit-type', { state: { edit: spiritType } })
   }
 
   const handleBotanicals = (id) => {
     console.log('Botanicals for spirit type:', id)
     // TODO: Implement botanicals functionality
-  }
-
-  const handleDelete = (id) => {
-    console.log('Delete spirit type:', id)
-    // TODO: Implement delete functionality
   }
 
   return (
@@ -225,7 +230,19 @@ function InternalSpiritTypes() {
               </tr>
             </thead>
             <tbody className="bg-primary-light/50 divide-y divide-accent-blue/20">
-              {currentItems.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="13" className="px-6 py-12 text-center">
+                    <div className="text-gray-400">Loading spirit types...</div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="13" className="px-6 py-12 text-center">
+                    <div className="text-red-400">Error: {error}</div>
+                  </td>
+                </tr>
+              ) : currentItems.length === 0 ? (
                 <tr>
                   <td colSpan="13" className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center">
@@ -234,7 +251,7 @@ function InternalSpiritTypes() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                         </svg>
                       </div>
-                      <p className="text-gray-400 text-lg font-medium">No data available</p>
+                      <p className="text-gray-400 text-lg font-medium">No spirit types found. Create your first one!</p>
                     </div>
                   </td>
                 </tr>
@@ -244,14 +261,14 @@ function InternalSpiritTypes() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <button
-                          onClick={() => handleDetails(item.id)}
+                          onClick={() => handleDetails(item)}
                           className="text-accent-gold hover:text-accent-gold-light transition-colors duration-200 font-medium"
                         >
                           Details
                         </button>
                         <span className="text-gray-500">|</span>
                         <button
-                          onClick={() => handleEdit(item.id)}
+                          onClick={() => handleEdit(item)}
                           className="text-accent-gold hover:text-accent-gold-light transition-colors duration-200 font-medium"
                         >
                           Edit
@@ -273,19 +290,19 @@ function InternalSpiritTypes() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-gray-100 font-medium">{item.name}</div>
+                      <div className="text-gray-100 font-medium">{item.internalSpiritType || 'Unnamed'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-gray-300">{item.hide ? 'true' : 'false'}</div>
+                      <div className="text-gray-300">{item.hide ? 'Yes' : 'No'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-gray-300">{item.sort}</div>
+                      <div className="text-gray-300">{item.sortOrder || '—'}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-gray-300">{item.reportingCategory || '—'}</div>
+                      <div className="text-gray-300">{item.reportingColumn || '—'}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-gray-300">{item.ifWhiskey || '—'}</div>
+                      <div className="text-gray-300">{item.whiskeyKind || '—'}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-gray-300">{item.productionPart2 || '—'}</div>

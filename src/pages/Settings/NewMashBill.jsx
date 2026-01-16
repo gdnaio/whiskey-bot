@@ -1,8 +1,12 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import dynamoDBService from '../../services/dynamodb'
 
 function NewMashBill() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const editData = location.state?.edit
+  
   const [formData, setFormData] = useState({
     mashBillName: '',
     batchSize: '',
@@ -15,6 +19,24 @@ function NewMashBill() {
     sortOrder: '1'
   })
   const [ingredients, setIngredients] = useState([])
+
+  // Load edit data if available
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        mashBillName: editData.mashBillName || '',
+        batchSize: editData.batchSize?.toString() || '',
+        unit: editData.unit || 'gallons',
+        targetStartSG: editData.targetStartSG?.toString() || '1.0698',
+        targetStartBrix: editData.targetStartBrix?.toString() || '17.00',
+        targetEndSG: editData.targetEndSG?.toString() || '1.0000',
+        targetEndBrix: editData.targetEndBrix?.toString() || '0.00',
+        internalSpiritTypeID: editData.internalSpiritTypeID || '',
+        sortOrder: editData.sortOrder?.toString() || '1'
+      })
+      setIngredients(editData.ingredients || [])
+    }
+  }, [editData])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -48,30 +70,33 @@ function NewMashBill() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      // Example: Save to DynamoDB
-      // Uncomment and configure when ready:
-      /*
-      import dynamoDBService from '../../services/dynamodb'
-      
       const mashBillData = {
-        id: crypto.randomUUID(), // Generate unique ID
-        ...formData,
-        ingredients,
-        createdAt: new Date().toISOString(),
+        id: editData?.id || crypto.randomUUID(),
+        mashBillName: formData.mashBillName,
+        batchSize: Number(formData.batchSize) || 0,
+        unit: formData.unit,
+        targetStartSG: Number(formData.targetStartSG) || 0,
+        targetStartBrix: Number(formData.targetStartBrix) || 0,
+        targetEndSG: Number(formData.targetEndSG) || 0,
+        targetEndBrix: Number(formData.targetEndBrix) || 0,
+        internalSpiritTypeID: formData.internalSpiritTypeID || '',
+        sortOrder: Number(formData.sortOrder) || 1,
+        ingredients: ingredients.map(ing => ({
+          rawMaterial: ing.rawMaterial,
+          unitsInBatch: Number(ing.unitsInBatch) || 0
+        })),
         updatedAt: new Date().toISOString(),
       }
       
-      await dynamoDBService.putItem(
-        import.meta.env.VITE_TABLE_MASH_BILLS || 'mash-bills',
-        mashBillData
-      )
-      */
+      if (!editData) {
+        mashBillData.createdAt = new Date().toISOString()
+      }
       
-      console.log('Form submitted:', { formData, ingredients })
+      await dynamoDBService.putItem('mash_bills', mashBillData)
       navigate('/settings/mash-bills')
     } catch (error) {
       console.error('Error saving mash bill:', error)
-      alert('Failed to save mash bill. Please try again.')
+      alert(`Failed to save mash bill: ${error.message}`)
     }
   }
 

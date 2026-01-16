@@ -1,27 +1,53 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import dynamoDBService from '../../services/dynamodb'
 
 function MashBills() {
   const navigate = useNavigate()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
-  
-  const mashBills = [
-    { id: 1, name: 'Agave Spirit', totalVol: 3724.82, internalSpirit: 'Agave Spirit', pgYield: 682.48, pgHeartsYield: 545.98 },
-    { id: 2, name: 'Bourbon', totalVol: 3566.322675, internalSpirit: 'Bourbon', pgYield: 653.44, pgHeartsYield: 522.75 },
-    { id: 3, name: 'Bourbon Barrel Gin', totalVol: 3566.322675, internalSpirit: "Jasper's Bourbon Barrel Gin", pgYield: 653.44, pgHeartsYield: 522.75 },
-    { id: 4, name: 'Danko Rye', totalVol: 3566.322675, internalSpirit: 'Danko Rye', pgYield: 653.44, pgHeartsYield: 522.75 },
-    { id: 5, name: 'Gin', totalVol: 3566.322675, internalSpirit: "Jasper's Gin", pgYield: 653.44, pgHeartsYield: 522.75 },
-    { id: 6, name: 'M1 Rye', totalVol: 500, internalSpirit: 'M1 Rye', pgYield: 91.61, pgHeartsYield: 73.29 },
-    { id: 7, name: 'Reaper Vodka', totalVol: 3566.322675, internalSpirit: 'Reaper Vodka', pgYield: 653.44, pgHeartsYield: 522.75 },
-    { id: 8, name: 'RS Rye', totalVol: 3566.322675, internalSpirit: 'RS Rye', pgYield: 653.44, pgHeartsYield: 522.75 },
-    { id: 9, name: 'Rum', totalVol: 3566.5, internalSpirit: 'Rum', pgYield: 653.47, pgHeartsYield: 522.78 },
-    { id: 10, name: 'Single Malt Whiskey', totalVol: 1188.774225, internalSpirit: 'Single Malt Whiskey', pgYield: 217.81, pgHeartsYield: 174.25 },
-    { id: 11, name: 'Tolerance', totalVol: 3566.322675, internalSpirit: 'Tolerance Liquor', pgYield: 653.44, pgHeartsYield: 522.75 },
-    { id: 12, name: 'Vodka', totalVol: 3566.322675, internalSpirit: 'Vodka', pgYield: 653.44, pgHeartsYield: 522.75 },
-    { id: 13, name: 'Vodka corn +wheat', totalVol: 1585.0323, internalSpirit: 'Vodka', pgYield: 290.42, pgHeartsYield: 232.33 },
-    { id: 14, name: 'Wheat whiskey', totalVol: 500, internalSpirit: 'Wheat Whiskey', pgYield: 91.61, pgHeartsYield: 73.29 },
-  ]
+  const [mashBills, setMashBills] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Load mash bills from DynamoDB
+  useEffect(() => {
+    loadMashBills()
+  }, [])
+
+  const loadMashBills = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const items = await dynamoDBService.scanTable('mash_bills')
+      // Sort by sortOrder, then by name
+      items.sort((a, b) => {
+        const orderA = a.sortOrder || 999
+        const orderB = b.sortOrder || 999
+        if (orderA !== orderB) return orderA - orderB
+        return (a.mashBillName || '').localeCompare(b.mashBillName || '')
+      })
+      setMashBills(items)
+    } catch (err) {
+      console.error('Error loading mash bills:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this mash bill?')) {
+      return
+    }
+    try {
+      await dynamoDBService.deleteItem('mash_bills', { id })
+      loadMashBills()
+    } catch (err) {
+      console.error('Error deleting mash bill:', err)
+      alert(`Failed to delete mash bill: ${err.message}`)
+    }
+  }
 
   const totalItems = mashBills.length
   const totalPages = Math.ceil(totalItems / itemsPerPage)
@@ -40,14 +66,8 @@ function MashBills() {
     setCurrentPage(1)
   }
 
-  const handleEdit = (id) => {
-    console.log('Edit mash bill:', id)
-    // TODO: Implement edit functionality
-  }
-
-  const handleDelete = (id) => {
-    console.log('Delete mash bill:', id)
-    // TODO: Implement delete functionality
+  const handleEdit = (mashBill) => {
+    navigate('/settings/new-mash-bill', { state: { edit: mashBill } })
   }
 
   return (
@@ -144,7 +164,19 @@ function MashBills() {
               </tr>
             </thead>
             <tbody className="bg-primary-light/50 divide-y divide-accent-blue/20">
-              {currentItems.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-12 text-center">
+                    <div className="text-gray-400">Loading mash bills...</div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-12 text-center">
+                    <div className="text-red-400">Error: {error}</div>
+                  </td>
+                </tr>
+              ) : currentItems.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center">
@@ -153,7 +185,7 @@ function MashBills() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                         </svg>
                       </div>
-                      <p className="text-gray-400 text-lg font-medium">No data available</p>
+                      <p className="text-gray-400 text-lg font-medium">No mash bills found. Create your first mash bill!</p>
                     </div>
                   </td>
                 </tr>
@@ -163,7 +195,7 @@ function MashBills() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <button
-                          onClick={() => handleEdit(item.id)}
+                          onClick={() => handleEdit(item)}
                           className="text-accent-gold hover:text-accent-gold-light transition-colors duration-200 font-medium"
                         >
                           Edit
@@ -178,13 +210,15 @@ function MashBills() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-gray-100 font-medium">{item.name}</div>
+                      <div className="text-gray-100 font-medium">{item.mashBillName || 'Unnamed Mash Bill'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-gray-300">{item.totalVol.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                      <div className="text-gray-300">
+                        {item.batchSize ? item.batchSize.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-gray-300">{item.internalSpirit}</div>
+                      <div className="text-gray-300">{item.internalSpiritTypeID || 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-gray-300">{item.pgYield.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>

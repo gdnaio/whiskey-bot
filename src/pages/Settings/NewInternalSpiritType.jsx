@@ -1,8 +1,14 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import dynamoDBService from '../../services/dynamodb'
 
 function NewInternalSpiritType() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const editData = location.state?.edit
+  const [whiskeyKinds, setWhiskeyKinds] = useState([])
+  const [loadingWhiskeyKinds, setLoadingWhiskeyKinds] = useState(true)
+  
   const [formData, setFormData] = useState({
     internalSpiritType: '',
     quickbooksInternalSpiritType: '',
@@ -20,6 +26,54 @@ function NewInternalSpiritType() {
     defaultHeartsAccount: 'Storage'
   })
 
+  // Load whiskey kinds from DynamoDB
+  useEffect(() => {
+    loadWhiskeyKinds()
+  }, [])
+
+  const loadWhiskeyKinds = async () => {
+    try {
+      setLoadingWhiskeyKinds(true)
+      const items = await dynamoDBService.scanTable('whiskey_kinds')
+      items.sort((a, b) => (a.rowNumber || 999) - (b.rowNumber || 999))
+      setWhiskeyKinds(items)
+    } catch (err) {
+      console.error('Error loading whiskey kinds:', err)
+      // Fallback to hardcoded values if DynamoDB fails
+      setWhiskeyKinds([
+        { id: '1', typeName: 'Bourbon', rowNumber: 1 },
+        { id: '2', typeName: 'Corn', rowNumber: 2 },
+        { id: '3', typeName: 'Rye', rowNumber: 3 },
+        { id: '4', typeName: 'Light', rowNumber: 4 },
+        { id: '5', typeName: 'Wheat', rowNumber: 5 },
+      ])
+    } finally {
+      setLoadingWhiskeyKinds(false)
+    }
+  }
+
+  // Load edit data if available
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        internalSpiritType: editData.internalSpiritType || '',
+        quickbooksInternalSpiritType: editData.quickbooksInternalSpiritType || '',
+        skuPartNumber: editData.skuPartNumber || '',
+        reportingColumn: editData.reportingColumn || '',
+        whiskeyKind: editData.whiskeyKind || '',
+        reportingLineProductionSectionIV: editData.reportingLineProductionSectionIV || '',
+        reportingLineProcessingSectionIV: editData.reportingLineProcessingSectionIV || '',
+        reportingLineProductionSectionII: editData.reportingLineProductionSectionII || '',
+        importedSpirit: editData.importedSpirit || false,
+        bottledAsImported: editData.bottledAsImported || false,
+        reportingLineProcessingSectionIII: editData.reportingLineProcessingSectionIII || '',
+        treatAsWineInProcessingBulk: editData.treatAsWineInProcessingBulk || false,
+        sortOrder: editData.sortOrder?.toString() || '1',
+        defaultHeartsAccount: editData.defaultHeartsAccount || 'Storage'
+      })
+    }
+  }, [editData])
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -28,11 +82,77 @@ function NewInternalSpiritType() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: Implement actual submission logic
-    console.log('Form submitted:', formData)
-    navigate('/settings/internal-spirit-types')
+    
+    // Validation based on rules
+    if ((formData.reportingColumn === 'Whiskey160AndOver' || formData.reportingColumn === 'WhiskeyOver160') && !formData.whiskeyKind) {
+      alert('You must choose a "Whiskey Kind (If Whiskey)" when Reporting Column is "Whiskey160AndOver" or "WhiskeyOver160".')
+      return
+    }
+    
+    if ((formData.reportingColumn === 'Brandy170AndUnder' || formData.reportingColumn === 'BrandyOver170') && !formData.reportingLineProductionSectionIV) {
+      alert('You must choose a "Reporting Line: Production Section IV (If Brandy)" when Reporting Column is "Brandy170AndUnder" or "BrandyOver170".')
+      return
+    }
+    
+    if (formData.reportingLineProductionSectionII && formData.reportingColumn !== 'Spirits190AndOver') {
+      alert('You can only choose a "Reporting Line: Production Section II (If Neutral Spirit >190 PF)" if your Reporting Column is "Spirits190AndOver".')
+      return
+    }
+    
+    if (formData.reportingLineProcessingSectionIII && formData.reportingColumn !== 'Rum') {
+      alert('You can only choose a "Reporting Line: Processing Section III (Line 48 Imported Spirits Category)" if your Reporting Column is "Rum".')
+      return
+    }
+    
+    try {
+      // Build complete data object with all form fields
+      const spiritTypeData = {
+        // Primary identifier
+        id: editData?.id || crypto.randomUUID(),
+        
+        // Basic Information Fields
+        internalSpiritType: formData.internalSpiritType || '',
+        quickbooksInternalSpiritType: formData.quickbooksInternalSpiritType || '',
+        skuPartNumber: formData.skuPartNumber || '',
+        
+        // Reporting Fields
+        reportingColumn: formData.reportingColumn || '',
+        whiskeyKind: formData.whiskeyKind || '',
+        reportingLineProductionSectionIV: formData.reportingLineProductionSectionIV || '',
+        reportingLineProcessingSectionIV: formData.reportingLineProcessingSectionIV || '',
+        reportingLineProductionSectionII: formData.reportingLineProductionSectionII || '',
+        reportingLineProcessingSectionIII: formData.reportingLineProcessingSectionIII || '',
+        
+        // Imported Spirit Fields
+        importedSpirit: formData.importedSpirit || false,
+        bottledAsImported: formData.bottledAsImported || false,
+        
+        // Additional Options
+        treatAsWineInProcessingBulk: formData.treatAsWineInProcessingBulk || false,
+        sortOrder: Number(formData.sortOrder) || 1,
+        defaultHeartsAccount: formData.defaultHeartsAccount || 'Storage',
+        
+        // Metadata
+        updatedAt: new Date().toISOString(),
+      }
+      
+      // Add createdAt only for new records
+      if (!editData) {
+        spiritTypeData.createdAt = new Date().toISOString()
+      }
+      
+      // Save to DynamoDB
+      await dynamoDBService.putItem('internal_spirit_types', spiritTypeData)
+      
+      // Show success message and navigate
+      alert('Internal spirit type saved successfully!')
+      navigate('/settings/internal-spirit-types')
+    } catch (error) {
+      console.error('Error saving internal spirit type:', error)
+      alert(`Failed to save internal spirit type: ${error.message}`)
+    }
   }
 
   const handleCancel = () => {
@@ -50,7 +170,7 @@ function NewInternalSpiritType() {
           </span>
         </div>
         <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-accent-gold to-white bg-clip-text text-transparent mb-4">
-          Create Internal Spirit Type
+          {editData ? 'Edit Internal Spirit Type' : 'Create Internal Spirit Type'}
         </h1>
       </div>
 
@@ -77,12 +197,11 @@ function NewInternalSpiritType() {
             </p>
           </div>
 
-          {/* Basic Information */}
+          {/* Form Fields */}
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-light via-primary-light to-primary-dark border border-accent-blue/50 p-8 shadow-2xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-accent-gold/5 rounded-full blur-3xl"></div>
             <div className="relative space-y-6">
-              <h2 className="text-2xl font-bold text-white mb-6">Basic Information</h2>
-              
+              {/* 1. Internal Spirit Type */}
               <div>
                 <label className="block text-white font-semibold mb-3">
                   Internal Spirit Type <span className="text-red-400">*</span>
@@ -98,22 +217,22 @@ function NewInternalSpiritType() {
                 />
               </div>
 
+              {/* 2. Quickbooks Internal Spirit Type */}
               <div>
                 <label className="block text-white font-semibold mb-3">
                   Quickbooks Internal Spirit Type
                 </label>
-                <select
+                <input
+                  type="text"
                   name="quickbooksInternalSpiritType"
                   value={formData.quickbooksInternalSpiritType}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
-                >
-                  <option value="">Select...</option>
-                  <option value="1">Spirit Type 1</option>
-                  <option value="2">Spirit Type 2</option>
-                </select>
+                  placeholder="Enter Quickbooks Internal Spirit Type"
+                />
               </div>
 
+              {/* 3. SKU/Part# */}
               <div>
                 <label className="block text-white font-semibold mb-3">
                   SKU/Part#
@@ -128,28 +247,7 @@ function NewInternalSpiritType() {
                 />
               </div>
 
-              <div>
-                <label className="block text-white font-semibold mb-3">
-                  Sort Order
-                </label>
-                <input
-                  type="number"
-                  name="sortOrder"
-                  value={formData.sortOrder}
-                  onChange={handleInputChange}
-                  min="1"
-                  className="w-full px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Reporting Information */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-light via-primary-light to-primary-dark border border-accent-blue/50 p-8 shadow-2xl">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-blue/10 rounded-full blur-3xl"></div>
-            <div className="relative space-y-6">
-              <h2 className="text-2xl font-bold text-white mb-6">Reporting Information</h2>
-              
+              {/* 4. Reporting Column */}
               <div>
                 <label className="block text-white font-semibold mb-3">
                   Reporting Column
@@ -187,114 +285,67 @@ function NewInternalSpiritType() {
                 </div>
               </div>
 
-              {(formData.reportingColumn === 'Whiskey160AndOver' || formData.reportingColumn === 'WhiskeyOver160') && (
-                <div>
-                  <label className="block text-white font-semibold mb-3">
-                    Whiskey Kind (If Whiskey)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <select
-                      name="whiskeyKind"
-                      value={formData.whiskeyKind}
-                      onChange={handleInputChange}
-                      required
-                      className="flex-1 px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
-                    >
-                      <option value="">Select...</option>
-                      <option value="Bourbon">Bourbon</option>
-                      <option value="Corn">Corn</option>
-                      <option value="Rye">Rye</option>
-                      <option value="Light">Light</option>
-                      <option value="Wheat">Wheat</option>
-                      <option value="BlendedStraightWhiskey">BlendedStraightWhiskey</option>
-                      <option value="BlendedWhiskeyWNeutralSpirits">BlendedWhiskeyWNeutralSpirits</option>
-                      <option value="BlendedWhiskeyWLightWhiskey">BlendedWhiskeyWLightWhiskey</option>
-                      <option value="BlendedLightWhiskey">BlendedLightWhiskey</option>
-                      <option value="AnyOtherWhiskeyBlends">AnyOtherWhiskeyBlends</option>
-                      <option value="ImportedWhiskeyScotch">ImportedWhiskeyScotch</option>
-                      <option value="ImportedWhiskeyCanadian">ImportedWhiskeyCanadian</option>
-                      <option value="ImportedWhiskeyIrishOthers">ImportedWhiskeyIrishOthers</option>
-                      <option value="DomesticWhiskey160AndUnder">DomesticWhiskey160AndUnder</option>
-                      <option value="DomesticWhiskeyOver160">DomesticWhiskeyOver160</option>
-                      <option value="Brandy170AndUnder">Brandy170AndUnder</option>
-                      <option value="BrandyOver170">BrandyOver170</option>
-                      <option value="RumPuertoRican">RumPuertoRican</option>
-                      <option value="RumVirginIslands">RumVirginIslands</option>
-                      <option value="RumDomestic">RumDomestic</option>
-                      <option value="RumOther">RumOther</option>
-                      <option value="Gin">Gin</option>
-                      <option value="Vodka">Vodka</option>
-                      <option value="CordialsLiqueursSpecialties">CordialsLiqueursSpecialties</option>
-                      <option value="Cocktails">Cocktails</option>
-                      <option value="Tequila">Tequila</option>
-                      <option value="Other">Other</option>
-                      <option value="Wine">Wine</option>
-                      <option value="NeutralSpiritsNonVodka">NeutralSpiritsNonVodka</option>
-                      <option value="GrapeBrandy">GrapeBrandy</option>
-                      <option value="AllOtherBrandy">AllOtherBrandy</option>
-                      <option value="NeutralGrapeBrandy">NeutralGrapeBrandy</option>
-                      <option value="AllOtherNeutralBrandy">AllOtherNeutralBrandy</option>
-                    </select>
-                    <button
-                      type="button"
-                      className="px-4 py-3 bg-gradient-to-br from-primary-light to-primary-dark border border-accent-blue/50 text-gray-300 rounded-xl hover:border-accent-gold/50 hover:text-accent-gold transition-all duration-200 font-medium"
-                    >
-                      Manage
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {(formData.reportingColumn === 'Brandy170AndUnder' || formData.reportingColumn === 'BrandyOver170') && (
-                <div>
-                  <label className="block text-white font-semibold mb-3">
-                    Reporting Line: Production Section IV (If Brandy)
-                  </label>
+              {/* 5. Whiskey Kind (If Whiskey) */}
+              <div>
+                <label className="block text-white font-semibold mb-3">
+                  Whiskey Kind (If Whiskey)
+                </label>
+                <div className="flex items-center gap-2">
                   <select
-                    name="reportingLineProductionSectionIV"
-                    value={formData.reportingLineProductionSectionIV}
+                    name="whiskeyKind"
+                    value={formData.whiskeyKind}
                     onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
+                    required={(formData.reportingColumn === 'Whiskey160AndOver' || formData.reportingColumn === 'WhiskeyOver160')}
+                    disabled={loadingWhiskeyKinds}
+                    className="flex-1 px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20 disabled:opacity-50"
                   >
                     <option value="">Select...</option>
-                    <option value="GrapeBrandy">GrapeBrandy</option>
-                    <option value="AllOtherBrandy">AllOtherBrandy</option>
-                    <option value="NeutralGrapeBrandy">NeutralGrapeBrandy</option>
-                    <option value="AllOtherNeutralBrandy">AllOtherNeutralBrandy</option>
+                    {whiskeyKinds.map((kind) => (
+                      <option key={kind.id} value={kind.typeName}>
+                        {kind.typeName}
+                      </option>
+                    ))}
+                    {/* Fallback options if DynamoDB is empty */}
+                    {whiskeyKinds.length === 0 && (
+                      <>
+                        <option value="Bourbon">Bourbon</option>
+                        <option value="Corn">Corn</option>
+                        <option value="Rye">Rye</option>
+                        <option value="Light">Light</option>
+                        <option value="Wheat">Wheat</option>
+                      </>
+                    )}
                   </select>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/settings/whiskey-kinds')}
+                    className="px-4 py-3 bg-gradient-to-br from-primary-light to-primary-dark border border-accent-blue/50 text-gray-300 rounded-xl hover:border-accent-gold/50 hover:text-accent-gold transition-all duration-200 font-medium"
+                  >
+                    Manage
+                  </button>
                 </div>
-              )}
+              </div>
 
-              {formData.reportingColumn === 'Spirits190AndOver' && (
-                <div>
-                  <label className="block text-white font-semibold mb-3">
-                    Reporting Line: Production Section II (If Neutral Spirit >190 PF)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <select
-                      name="reportingLineProductionSectionII"
-                      value={formData.reportingLineProductionSectionII}
-                      onChange={handleInputChange}
-                      className="flex-1 px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
-                    >
-                      <option value="">Select...</option>
-                      <option value="NeutralSpiritsNonVodka">NeutralSpiritsNonVodka</option>
-                      <option value="Vodka">Vodka</option>
-                    </select>
-                    <button
-                      type="button"
-                      className="p-3 text-gray-400 hover:text-accent-gold transition-colors"
-                      title="Information"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              )}
+              {/* 6. Reporting Line: Production Section IV (If Brandy) */}
+              <div>
+                <label className="block text-white font-semibold mb-3">
+                  Reporting Line: Production Section IV (If Brandy)
+                </label>
+                <select
+                  name="reportingLineProductionSectionIV"
+                  value={formData.reportingLineProductionSectionIV}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
+                >
+                  <option value="">Select...</option>
+                  <option value="GrapeBrandy">GrapeBrandy</option>
+                  <option value="AllOtherBrandy">AllOtherBrandy</option>
+                  <option value="NeutralGrapeBrandy">NeutralGrapeBrandy</option>
+                  <option value="AllOtherNeutralBrandy">AllOtherNeutralBrandy</option>
+                </select>
+              </div>
 
+              {/* 7. Reporting Line: Processing Section IV (Spirit Type Dumped or Created for Bottling) */}
               <div>
                 <label className="block text-white font-semibold mb-3">
                   Reporting Line: Processing Section IV (Spirit Type Dumped or Created for Bottling)
@@ -306,19 +357,46 @@ function NewInternalSpiritType() {
                   className="w-full px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
                 >
                   <option value="">Select...</option>
-                  <option value="1">Processing Option 1</option>
-                  <option value="2">Processing Option 2</option>
+                  <option value="Domestic Whiskey160An..">Domestic Whiskey160An..</option>
+                  <option value="Domestic WhiskeyOver160">Domestic WhiskeyOver160</option>
+                  <option value="RumDomestic">RumDomestic</option>
+                  <option value="RumPuertoRican">RumPuertoRican</option>
+                  <option value="RumVirginIslands">RumVirginIslands</option>
+                  <option value="RumOther">RumOther</option>
+                  <option value="Gin">Gin</option>
+                  <option value="Vodka">Vodka</option>
+                  <option value="CordialsLiqueursSpecial..">CordialsLiqueursSpecial..</option>
+                  <option value="Cocktails">Cocktails</option>
+                  <option value="Tequila">Tequila</option>
+                  <option value="Other">Other</option>
+                  <option value="Wine">Wine</option>
                 </select>
               </div>
-            </div>
-          </div>
 
-          {/* Imported Spirit Options */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-light via-primary-light to-primary-dark border border-accent-blue/50 p-8 shadow-2xl">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-gold/5 rounded-full blur-3xl"></div>
-            <div className="relative space-y-6">
-              <h2 className="text-2xl font-bold text-white mb-6">Imported Spirit Options</h2>
-              
+              {/* 8. Reporting Line: Production Section II (If Neutral Spirit >190 PF) */}
+              <div>
+                <label className="block text-white font-semibold mb-3">
+                  Reporting Line: Production Section II (If Neutral Spirit >190 PF)
+                </label>
+                <select
+                  name="reportingLineProductionSectionII"
+                  value={formData.reportingLineProductionSectionII}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
+                >
+                  <option value="">Select...</option>
+                  <option value="Grain">Grain</option>
+                  <option value="Fruit">Fruit</option>
+                  <option value="Molasses">Molasses</option>
+                  <option value="Ethyl/Sulfate">Ethyl/Sulfate</option>
+                  <option value="EthyleneGas">EthyleneGas</option>
+                  <option value="SulphiteLiquors">SulphiteLiquors</option>
+                  <option value="FromRedistillation">FromRedistillation</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {/* 9. Imported Spirit */}
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -344,6 +422,7 @@ function NewInternalSpiritType() {
                 </div>
               </div>
 
+              {/* 10. Bottled as Imported */}
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -369,33 +448,25 @@ function NewInternalSpiritType() {
                 </div>
               </div>
 
-              {formData.reportingColumn === 'Rum' && (
-                <div>
-                  <label className="block text-white font-semibold mb-3">
-                    Reporting Line: Processing Section III (Line 48 Imported Spirits Category)
-                  </label>
-                  <select
-                    name="reportingLineProcessingSectionIII"
-                    value={formData.reportingLineProcessingSectionIII}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
-                  >
-                    <option value="">Select...</option>
-                    <option value="PuertoRicanSpirits">PuertoRicanSpirits</option>
-                    <option value="VirginislandsSpirits">VirginislandsSpirits</option>
-                    <option value="OtherimportedRum">OtherimportedRum</option>
-                  </select>
-                </div>
-              )}
-            </div>
-          </div>
+              {/* 11. Reporting Line: Processing Section III (Line 48 Imported Spirits Category) */}
+              <div>
+                <label className="block text-white font-semibold mb-3">
+                  Reporting Line: Processing Section III (Line 48 Imported Spirits Category)
+                </label>
+                <select
+                  name="reportingLineProcessingSectionIII"
+                  value={formData.reportingLineProcessingSectionIII}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
+                >
+                  <option value="">Select...</option>
+                  <option value="PuertoRicanSpirits">PuertoRicanSpirits</option>
+                  <option value="VirginIslandsSpirits">VirginIslandsSpirits</option>
+                  <option value="OtherimportedRum">OtherimportedRum</option>
+                </select>
+              </div>
 
-          {/* Additional Options */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-light via-primary-light to-primary-dark border border-accent-blue/50 p-8 shadow-2xl">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-blue/10 rounded-full blur-3xl"></div>
-            <div className="relative space-y-6">
-              <h2 className="text-2xl font-bold text-white mb-6">Additional Options</h2>
-              
+              {/* 12. Treat as wine in processing bulk */}
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -410,6 +481,22 @@ function NewInternalSpiritType() {
                 </label>
               </div>
 
+              {/* 13. Sort Order */}
+              <div>
+                <label className="block text-white font-semibold mb-3">
+                  Sort Order
+                </label>
+                <input
+                  type="number"
+                  name="sortOrder"
+                  value={formData.sortOrder}
+                  onChange={handleInputChange}
+                  min="1"
+                  className="w-full px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
+                />
+              </div>
+
+              {/* 14. Default Hearts Account */}
               <div>
                 <label className="block text-white font-semibold mb-3">
                   Default Hearts Account

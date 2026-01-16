@@ -1,8 +1,12 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import dynamoDBService from '../../services/dynamodb'
 
 function CreateWarehouse() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const editData = location.state?.edit
+  
   const [formData, setFormData] = useState({
     // Warehouse Section
     name: '',
@@ -24,6 +28,30 @@ function CreateWarehouse() {
     note: ''
   })
 
+  // Load edit data if available
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        name: editData.name || '',
+        taxPaid: editData.taxPaid || false,
+        sortOrder: editData.sortOrder?.toString() || '1',
+        addressName: editData.addressName || '',
+        contact: editData.contact || '',
+        email: editData.email || '',
+        url: editData.url || '',
+        address1: editData.address1 || '',
+        address2: editData.address2 || '',
+        city: editData.city || '',
+        stateRegion: editData.stateRegion || '',
+        zipCode: editData.zipCode || '',
+        country: editData.country || '',
+        phone: editData.phone || '',
+        fax: editData.fax || '',
+        note: editData.note || ''
+      })
+    }
+  }, [editData])
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -35,29 +63,40 @@ function CreateWarehouse() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      // Example: Save to DynamoDB
-      // Uncomment and configure when ready:
-      /*
-      import dynamoDBService from '../../services/dynamodb'
-      
       const warehouseData = {
-        id: crypto.randomUUID(), // Generate unique ID
-        ...formData,
-        createdAt: new Date().toISOString(),
+        id: editData?.id || crypto.randomUUID(), // Generate unique ID
+        name: formData.name,
+        taxPaid: formData.taxPaid,
+        sortOrder: Number(formData.sortOrder) || 1,
+        // Address fields
+        addressName: formData.addressName || '',
+        contact: formData.contact || '',
+        email: formData.email || '',
+        url: formData.url || '',
+        address1: formData.address1 || '',
+        address2: formData.address2 || '',
+        city: formData.city || '',
+        stateRegion: formData.stateRegion || '',
+        zipCode: formData.zipCode || '',
+        country: formData.country || '',
+        phone: formData.phone || '',
+        fax: formData.fax || '',
+        note: formData.note || '',
+        // Metadata
         updatedAt: new Date().toISOString(),
       }
       
-      await dynamoDBService.putItem(
-        import.meta.env.VITE_TABLE_WAREHOUSES || 'warehouses',
-        warehouseData
-      )
-      */
+      if (!editData) {
+        warehouseData.createdAt = new Date().toISOString()
+      }
       
-      console.log('Form submitted:', formData)
+      await dynamoDBService.putItem('warehouses', warehouseData)
+      
+      // Navigate back to warehouses list
       navigate('/settings/warehouses')
     } catch (error) {
       console.error('Error saving warehouse:', error)
-      alert('Failed to save warehouse. Please try again.')
+      alert(`Failed to save warehouse: ${error.message}`)
     }
   }
 

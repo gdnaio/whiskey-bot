@@ -1,23 +1,94 @@
-function WhiskeyKinds() {
-  const whiskeyKinds = [
-    { id: 1, typeName: 'Bourbon', rowNumber: 1 },
-    { id: 2, typeName: 'Corn', rowNumber: 2 },
-    { id: 3, typeName: 'Rye', rowNumber: 3 },
-    { id: 4, typeName: 'Light', rowNumber: 4 },
-    { id: 5, typeName: 'Wheat', rowNumber: 5, hasActions: true },
-    { id: 6, typeName: '—', rowNumber: 6, hasActions: true },
-    { id: 7, typeName: '—', rowNumber: 7, hasActions: true },
-    { id: 8, typeName: '—', rowNumber: 8, hasActions: true },
-  ]
+import { useState, useEffect } from 'react'
+import dynamoDBService from '../../services/dynamodb'
 
-  const handleEdit = (id) => {
-    console.log('Edit whiskey kind:', id)
-    // TODO: Implement edit functionality
+function WhiskeyKinds() {
+  const [whiskeyKinds, setWhiskeyKinds] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Load whiskey kinds from DynamoDB
+  useEffect(() => {
+    loadWhiskeyKinds()
+  }, [])
+
+  const loadWhiskeyKinds = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const items = await dynamoDBService.scanTable('whiskey_kinds')
+      // Sort by rowNumber
+      items.sort((a, b) => (a.rowNumber || 999) - (b.rowNumber || 999))
+      
+      // If no items in DB, initialize with default data
+      if (items.length === 0) {
+        const defaultKinds = [
+          { id: crypto.randomUUID(), typeName: 'Bourbon', rowNumber: 1 },
+          { id: crypto.randomUUID(), typeName: 'Corn', rowNumber: 2 },
+          { id: crypto.randomUUID(), typeName: 'Rye', rowNumber: 3 },
+          { id: crypto.randomUUID(), typeName: 'Light', rowNumber: 4 },
+          { id: crypto.randomUUID(), typeName: 'Wheat', rowNumber: 5 },
+          { id: crypto.randomUUID(), typeName: '—', rowNumber: 6 },
+          { id: crypto.randomUUID(), typeName: '—', rowNumber: 7 },
+          { id: crypto.randomUUID(), typeName: '—', rowNumber: 8 },
+        ]
+        // Save default kinds to DB
+        for (const kind of defaultKinds) {
+          await dynamoDBService.putItem('whiskey_kinds', {
+            ...kind,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          })
+        }
+        setWhiskeyKinds(defaultKinds)
+      } else {
+        setWhiskeyKinds(items)
+      }
+    } catch (err) {
+      console.error('Error loading whiskey kinds:', err)
+      setError(err.message)
+      // Fallback to hardcoded data if DB fails
+      setWhiskeyKinds([
+        { id: '1', typeName: 'Bourbon', rowNumber: 1 },
+        { id: '2', typeName: 'Corn', rowNumber: 2 },
+        { id: '3', typeName: 'Rye', rowNumber: 3 },
+        { id: '4', typeName: 'Light', rowNumber: 4 },
+        { id: '5', typeName: 'Wheat', rowNumber: 5 },
+        { id: '6', typeName: '—', rowNumber: 6 },
+        { id: '7', typeName: '—', rowNumber: 7 },
+        { id: '8', typeName: '—', rowNumber: 8 },
+      ])
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDetails = (id) => {
-    console.log('View details for whiskey kind:', id)
-    // TODO: Implement details view
+  const handleEdit = (whiskeyKind) => {
+    // TODO: Implement edit functionality - could open a modal or navigate to edit page
+    console.log('Edit whiskey kind:', whiskeyKind)
+    // For now, allow inline editing or show a modal
+    const newName = prompt('Enter new type name:', whiskeyKind.typeName || '')
+    if (newName !== null && newName !== whiskeyKind.typeName) {
+      updateWhiskeyKind(whiskeyKind.id, { ...whiskeyKind, typeName: newName })
+    }
+  }
+
+  const handleDetails = (whiskeyKind) => {
+    // TODO: Implement details view - could show a modal with more information
+    console.log('View details for whiskey kind:', whiskeyKind)
+    alert(`Whiskey Kind Details:\n\nType Name: ${whiskeyKind.typeName || '—'}\nRow Number: ${whiskeyKind.rowNumber}`)
+  }
+
+  const updateWhiskeyKind = async (id, updatedData) => {
+    try {
+      await dynamoDBService.putItem('whiskey_kinds', {
+        ...updatedData,
+        updatedAt: new Date().toISOString(),
+      })
+      loadWhiskeyKinds() // Reload the list
+    } catch (err) {
+      console.error('Error updating whiskey kind:', err)
+      alert(`Failed to update whiskey kind: ${err.message}`)
+    }
   }
 
   return (
@@ -55,43 +126,64 @@ function WhiskeyKinds() {
               </tr>
             </thead>
             <tbody className="bg-primary-light/50 divide-y divide-accent-blue/20">
-              {whiskeyKinds.map((item) => (
-                <tr key={item.id} className="hover:bg-primary-dark/50 transition-colors duration-200">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-gray-100 font-medium">
-                      {item.typeName === '—' ? (
-                        <span className="text-gray-500">{item.typeName}</span>
-                      ) : (
-                        item.typeName
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-gray-300">{item.rowNumber}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {item.hasActions ? (
-                      <div className="flex items-center gap-4">
-                        <button
-                          onClick={() => handleEdit(item.id)}
-                          className="text-accent-gold hover:text-accent-gold-light transition-colors duration-200 font-medium"
-                        >
-                          Edit
-                        </button>
-                        <span className="text-gray-500">|</span>
-                        <button
-                          onClick={() => handleDetails(item.id)}
-                          className="text-accent-gold hover:text-accent-gold-light transition-colors duration-200 font-medium"
-                        >
-                          Details
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-gray-500">—</span>
-                    )}
+              {loading ? (
+                <tr>
+                  <td colSpan="3" className="px-6 py-4 text-center text-gray-400">
+                    Loading whiskey kinds...
                   </td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td colSpan="3" className="px-6 py-4 text-center text-red-400">
+                    Error: {error}
+                  </td>
+                </tr>
+              ) : whiskeyKinds.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="px-6 py-4 text-center text-gray-400">
+                    No whiskey kinds found.
+                  </td>
+                </tr>
+              ) : (
+                whiskeyKinds.map((item) => (
+                  <tr key={item.id} className="hover:bg-primary-dark/50 transition-colors duration-200">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-gray-100 font-medium">
+                        {item.typeName === '—' || !item.typeName ? (
+                          <span className="text-gray-500">—</span>
+                        ) : (
+                          item.typeName
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-gray-300">{item.rowNumber}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {/* Show Edit and Details links for rows 5-8 (Wheat and empty rows) */}
+                      {item.rowNumber >= 5 ? (
+                        <div className="flex items-center gap-4">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="text-accent-gold hover:text-accent-gold-light transition-colors duration-200 font-medium"
+                          >
+                            Edit
+                          </button>
+                          <span className="text-gray-500">|</span>
+                          <button
+                            onClick={() => handleDetails(item)}
+                            className="text-accent-gold hover:text-accent-gold-light transition-colors duration-200 font-medium"
+                          >
+                            Details
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-gray-500">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

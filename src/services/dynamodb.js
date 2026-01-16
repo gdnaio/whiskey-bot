@@ -1,19 +1,33 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, ScanCommand, QueryCommand } from '@aws-sdk/lib-dynamodb'
 
+// Get environment (dev or prod)
+const environment = import.meta.env.VITE_ENVIRONMENT || 'dev'
+const isProduction = environment === 'prod' || environment === 'production'
+
 // Initialize DynamoDB client
-const client = new DynamoDBClient({
+// In production with Amplify, credentials may be handled by AWS SDK automatically
+const clientConfig = {
   region: import.meta.env.VITE_AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY || '',
-  },
-})
+}
+
+// Only add explicit credentials if they're provided (for local dev)
+if (import.meta.env.VITE_AWS_ACCESS_KEY_ID && import.meta.env.VITE_AWS_SECRET_ACCESS_KEY) {
+  clientConfig.credentials = {
+    accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
+    secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
+  }
+}
+
+const client = new DynamoDBClient(clientConfig)
 
 const docClient = DynamoDBDocumentClient.from(client)
 
 /**
  * DynamoDB Service
+ * 
+ * Supports both development (local .env) and production (AWS Amplify) environments.
+ * Automatically prefixes table names based on environment (dev_* or prod_*).
  * 
  * NOTE: For production, you should use a backend API instead of connecting directly
  * from the frontend. This setup is for development purposes.
@@ -23,6 +37,15 @@ const docClient = DynamoDBDocumentClient.from(client)
  */
 class DynamoDBService {
   /**
+   * Get the full table name with environment prefix
+   * @param {string} tableName - Base table name (e.g., 'warehouses')
+   * @returns {string} Full table name (e.g., 'dev_warehouses' or 'prod_warehouses')
+   */
+  getTableName(tableName) {
+    const prefix = isProduction ? 'prod' : 'dev'
+    return `${prefix}_${tableName}`
+  }
+  /**
    * Get a single item by primary key
    * @param {string} tableName - Name of the DynamoDB table
    * @param {object} key - Primary key object (e.g., { id: '123' })
@@ -31,7 +54,7 @@ class DynamoDBService {
   async getItem(tableName, key) {
     try {
       const command = new GetCommand({
-        TableName: tableName,
+        TableName: this.getTableName(tableName),
         Key: key,
       })
       const response = await docClient.send(command)
@@ -51,7 +74,7 @@ class DynamoDBService {
   async putItem(tableName, item) {
     try {
       const command = new PutCommand({
-        TableName: tableName,
+        TableName: this.getTableName(tableName),
         Item: item,
       })
       const response = await docClient.send(command)
@@ -74,7 +97,7 @@ class DynamoDBService {
   async updateItem(tableName, key, updateExpression, expressionAttributeNames = {}, expressionAttributeValues = {}) {
     try {
       const command = new UpdateCommand({
-        TableName: tableName,
+        TableName: this.getTableName(tableName),
         Key: key,
         UpdateExpression: updateExpression,
         ExpressionAttributeNames: expressionAttributeNames,
@@ -98,7 +121,7 @@ class DynamoDBService {
   async deleteItem(tableName, key) {
     try {
       const command = new DeleteCommand({
-        TableName: tableName,
+        TableName: this.getTableName(tableName),
         Key: key,
       })
       const response = await docClient.send(command)
@@ -118,7 +141,7 @@ class DynamoDBService {
   async scanTable(tableName, filterExpression = null) {
     try {
       const params = {
-        TableName: tableName,
+        TableName: this.getTableName(tableName),
       }
       
       if (filterExpression) {
@@ -147,7 +170,7 @@ class DynamoDBService {
   async queryTable(tableName, keyConditionExpression, expressionAttributeNames = {}, expressionAttributeValues = {}) {
     try {
       const command = new QueryCommand({
-        TableName: tableName,
+        TableName: this.getTableName(tableName),
         KeyConditionExpression: keyConditionExpression,
         ExpressionAttributeNames: expressionAttributeNames,
         ExpressionAttributeValues: expressionAttributeValues,

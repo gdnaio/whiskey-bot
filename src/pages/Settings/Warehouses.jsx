@@ -1,12 +1,60 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import dynamoDBService from '../../services/dynamodb'
 
 function Warehouses() {
   const navigate = useNavigate()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
-  const totalItems = 0 // No data initially
+  const [warehouses, setWarehouses] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Load warehouses from DynamoDB
+  useEffect(() => {
+    loadWarehouses()
+  }, [])
+
+  const loadWarehouses = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const items = await dynamoDBService.scanTable('warehouses')
+      // Sort by sortOrder, then by name
+      items.sort((a, b) => {
+        const orderA = a.sortOrder || 999
+        const orderB = b.sortOrder || 999
+        if (orderA !== orderB) return orderA - orderB
+        return (a.name || '').localeCompare(b.name || '')
+      })
+      setWarehouses(items)
+    } catch (err) {
+      console.error('Error loading warehouses:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this warehouse?')) {
+      return
+    }
+    try {
+      await dynamoDBService.deleteItem('warehouses', { id })
+      // Reload warehouses
+      loadWarehouses()
+    } catch (err) {
+      console.error('Error deleting warehouse:', err)
+      alert(`Failed to delete warehouse: ${err.message}`)
+    }
+  }
+
+  const totalItems = warehouses.length
   const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentItems = warehouses.slice(startIndex, endIndex)
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -83,15 +131,55 @@ function Warehouses() {
               </tr>
             </thead>
             <tbody className="bg-primary-light divide-y divide-accent-blue">
-              {totalItems === 0 ? (
+              {loading ? (
                 <tr>
                   <td colSpan="4" className="px-6 py-4 text-center text-gray-400">
-                    No items to display
+                    Loading warehouses...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-4 text-center text-red-400">
+                    Error: {error}
+                  </td>
+                </tr>
+              ) : currentItems.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-4 text-center text-gray-400">
+                    No warehouses found. Create your first warehouse!
                   </td>
                 </tr>
               ) : (
-                // Render data rows here when available
-                <tr></tr>
+                currentItems.map((warehouse) => (
+                  <tr key={warehouse.id} className="hover:bg-primary-DEFAULT/50 transition-colors">
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => navigate(`/settings/create-warehouse`, { state: { edit: warehouse } })}
+                          className="text-accent-blue hover:text-accent-gold transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <span className="text-gray-500">|</span>
+                        <button
+                          onClick={() => handleDelete(warehouse.id)}
+                          className="text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300 font-medium">
+                      {warehouse.name || 'Unnamed Warehouse'}
+                    </td>
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300">
+                      {warehouse.taxPaid ? 'Yes' : 'No'}
+                    </td>
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300">
+                      {warehouse.hide ? 'Yes' : 'No'}
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -151,6 +239,9 @@ function Warehouses() {
               <option value="50">50</option>
               <option value="100">100</option>
             </select>
+            <span className="ml-4">
+              {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} items
+            </span>
           </div>
         </div>
       </div>

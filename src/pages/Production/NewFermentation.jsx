@@ -1,26 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import dynamoDBService from '../../services/dynamodb'
 
 function NewFermentation() {
   const navigate = useNavigate()
-  
-  // Mash bills from settings
-  const mashBills = [
-    { id: 1, name: 'Agave Spirit', totalVol: 3724.82 },
-    { id: 2, name: 'Bourbon', totalVol: 3566.322675 },
-    { id: 3, name: 'Bourbon Barrel Gin', totalVol: 3566.322675 },
-    { id: 4, name: 'Danko Rye', totalVol: 3566.322675 },
-    { id: 5, name: 'Gin', totalVol: 3566.322675 },
-    { id: 6, name: 'M1 Rye', totalVol: 500 },
-    { id: 7, name: 'Reaper Vodka', totalVol: 3566.322675 },
-    { id: 8, name: 'RS Rye', totalVol: 3566.322675 },
-    { id: 9, name: 'Rum', totalVol: 3566.5 },
-    { id: 10, name: 'Single Malt Whiskey', totalVol: 1188.774225 },
-    { id: 11, name: 'Tolerance', totalVol: 3566.322675 },
-    { id: 12, name: 'Vodka', totalVol: 3566.322675 },
-    { id: 13, name: 'Vodka corn +wheat', totalVol: 1585.0323 },
-    { id: 14, name: 'Wheat whiskey', totalVol: 500 },
-  ]
+  const [mashBills, setMashBills] = useState([])
+  const [loadingMashBills, setLoadingMashBills] = useState(true)
 
   // Sample fermenters
   const fermenters = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8']
@@ -50,14 +35,37 @@ function NewFermentation() {
 
   const [selectedMashBill, setSelectedMashBill] = useState(null)
 
+  // Load mash bills from DynamoDB
+  useEffect(() => {
+    loadMashBills()
+  }, [])
+
+  const loadMashBills = async () => {
+    try {
+      setLoadingMashBills(true)
+      const items = await dynamoDBService.scanTable('mash_bills')
+      items.sort((a, b) => {
+        const orderA = a.sortOrder || 999
+        const orderB = b.sortOrder || 999
+        if (orderA !== orderB) return orderA - orderB
+        return (a.mashBillName || '').localeCompare(b.mashBillName || '')
+      })
+      setMashBills(items)
+    } catch (err) {
+      console.error('Error loading mash bills:', err)
+    } finally {
+      setLoadingMashBills(false)
+    }
+  }
+
   useEffect(() => {
     if (formData.mashBill) {
-      const mashBill = mashBills.find(mb => mb.id.toString() === formData.mashBill)
+      const mashBill = mashBills.find(mb => mb.id === formData.mashBill)
       setSelectedMashBill(mashBill)
     } else {
       setSelectedMashBill(null)
     }
-  }, [formData.mashBill])
+  }, [formData.mashBill, mashBills])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -102,12 +110,42 @@ function NewFermentation() {
     }
   }
 
-  const handleNext = (e) => {
+  const handleNext = async (e) => {
     e.preventDefault()
-    // TODO: Navigate to Step 2 of 2
-    console.log('Form data:', { ...formData, fermenterAllocations })
-    // For now, just log - will navigate to step 2 when implemented
-    alert('Step 2 will be implemented next')
+    try {
+      // Calculate total volume from fermenter allocations
+      const totalVolume = fermenterAllocations
+        .filter(f => f.enabled)
+        .reduce((sum, f) => sum + (parseFloat(f.volume) || 0), 0)
+
+      const cookData = {
+        id: crypto.randomUUID(),
+        timestamp: formData.timestamp,
+        mashBillId: formData.mashBill,
+        mashBillName: selectedMashBill?.mashBillName || '',
+        totalBatchSize: parseFloat(formData.totalBatchSize) || 0,
+        batchSizeUnit: formData.batchSizeUnit,
+        startingSG: parseFloat(formData.startingSG) || 0,
+        startingBrix: parseFloat(formData.startingBrix) || 0,
+        lotName: formData.lotName || '',
+        cookNumber: formData.cookNumber || '',
+        laborHours: parseFloat(formData.laborHours) || 0,
+        fermenterAllocations: fermenterAllocations.filter(f => f.enabled),
+        totalVolume: totalVolume,
+        status: 'draft', // Step 1 of 2, will be completed in step 2
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      
+      await dynamoDBService.putItem('fermentation_cooks', cookData)
+      
+      // Navigate to step 2 (for now, just go to fermentation log)
+      // TODO: Navigate to Step 2 of 2 when implemented
+      navigate('/production/fermentation-log')
+    } catch (error) {
+      console.error('Error saving fermentation cook:', error)
+      alert(`Failed to save fermentation cook: ${error.message}`)
+    }
   }
 
   const handleCancel = () => {

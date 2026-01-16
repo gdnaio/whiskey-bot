@@ -1,13 +1,61 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import dynamoDBService from '../../services/dynamodb'
 
 function FermentationLog() {
   const navigate = useNavigate()
   const [itemsPerPage, setItemsPerPage] = useState(50)
   const [currentPage, setCurrentPage] = useState(1)
+  const [fermentationLogs, setFermentationLogs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  // Sample fermentation log data from the image
-  const fermentationLogs = [
+  // Load fermentation logs from DynamoDB
+  useEffect(() => {
+    loadFermentationLogs()
+  }, [])
+
+  const loadFermentationLogs = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      // Load from both fermentation_logs and fermentation_cooks tables
+      const [logs, cooks] = await Promise.all([
+        dynamoDBService.scanTable('fermentation_logs').catch(() => []),
+        dynamoDBService.scanTable('fermentation_cooks').catch(() => [])
+      ])
+      
+      // Combine and sort by timestamp (newest first)
+      const allLogs = [...logs, ...cooks].sort((a, b) => {
+        const dateA = new Date(a.timestamp || a.createdAt || 0)
+        const dateB = new Date(b.timestamp || b.createdAt || 0)
+        return dateB - dateA
+      })
+      
+      setFermentationLogs(allLogs)
+    } catch (err) {
+      console.error('Error loading fermentation logs:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this fermentation log entry?')) {
+      return
+    }
+    try {
+      await dynamoDBService.deleteItem('fermentation_logs', { id })
+      loadFermentationLogs()
+    } catch (err) {
+      console.error('Error deleting fermentation log:', err)
+      alert(`Failed to delete: ${err.message}`)
+    }
+  }
+
+  // Sample fermentation log data from the image (fallback)
+  const sampleFermentationLogs = [
     { id: 382698, timestamp: '11-05-2025 1:45:00 PM', cookNumber: 583, lotName: '', fermenter: 'F3', mashBill: 'Bourbon', gal: 3566.32, strippedDate: '11-10-2025 1:52:00 PM', totalDays: 5.00, totalHours: 120.1, startSG: '', potential1: '', potential2: '', laborHours: 0.00, totalValue: 0.00, user: 'mitch@charlestondistill...', obs: true, fileArchive: '' },
     { id: 382697, timestamp: '11-04-2025 1:45:00 PM', cookNumber: 582, lotName: '', fermenter: 'F2', mashBill: 'Bourbon', gal: 3566.32, strippedDate: '11-09-2025 1:51:00 PM', totalDays: 5.00, totalHours: 120.1, startSG: '', potential1: '', potential2: '', laborHours: 0.00, totalValue: 0.00, user: 'mitch@charlestondistill...', obs: true, fileArchive: '' },
     { id: 382695, timestamp: '11-03-2025 1:45:00 PM', cookNumber: 581, lotName: '', fermenter: 'F1', mashBill: 'Bourbon', gal: 3566.32, strippedDate: '11-08-2025 1:50:00 PM', totalDays: 5.00, totalHours: 120.1, startSG: '', potential1: '', potential2: '', laborHours: 0.00, totalValue: 0.00, user: 'mitch@charlestondistill...', obs: true, fileArchive: '' },
@@ -52,11 +100,13 @@ function FermentationLog() {
     }))
   ]
 
-  const totalItems = fermentationLogs.length
+  // Use DynamoDB data if available, otherwise use sample data
+  const displayLogs = fermentationLogs.length > 0 ? fermentationLogs : sampleFermentationLogs
+  const totalItems = displayLogs.length
   const totalPages = Math.ceil(totalItems / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const currentItems = fermentationLogs.slice(startIndex, endIndex)
+  const currentItems = displayLogs.slice(startIndex, endIndex)
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -92,13 +142,6 @@ function FermentationLog() {
   const handleObs = (id) => {
     console.log('View observations for:', id)
     // TODO: Open observations modal/page
-  }
-
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this fermentation log entry?')) {
-      console.log('Delete:', id)
-      // TODO: Implement delete functionality
-    }
   }
 
   // Generate page numbers for pagination

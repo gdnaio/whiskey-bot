@@ -6,6 +6,7 @@ import Profile from './pages/Profile'
 import AccountSettings from './pages/AccountSettings'
 import Preferences from './pages/Preferences'
 import HelpSupport from './pages/HelpSupport'
+import TestDynamoDB from './pages/TestDynamoDB'
 
 // Main category pages
 import RawMaterials from './pages/RawMaterials'
@@ -126,6 +127,7 @@ function App() {
           <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-primary-dark/50 to-primary-dark">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/test-dynamodb" element={<TestDynamoDB />} />
               
               {/* User Account Pages */}
               <Route path="/profile" element={<Profile />} />
