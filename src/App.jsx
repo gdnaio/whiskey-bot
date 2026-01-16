@@ -7,6 +7,9 @@ import AccountSettings from './pages/AccountSettings'
 import Preferences from './pages/Preferences'
 import HelpSupport from './pages/HelpSupport'
 import TestDynamoDB from './pages/TestDynamoDB'
+import AuthCallback from './pages/AuthCallback'
+import Landing from './pages/Landing'
+import { useAuth, RequireAuth } from '@gdnaio/cognito-auth'
 
 // Main category pages
 import RawMaterials from './pages/RawMaterials'
@@ -117,136 +120,156 @@ import FermentationScrapLog from './pages/Production/FermentationScrapLog'
 import NewDistillation from './pages/Production/NewDistillation'
 import DistillationLog from './pages/Production/DistillationLog'
 
+function AppContent() {
+  const { isAuthenticated } = useAuth()
+
+  // Show landing page if not authenticated (except for callback route)
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="*" element={<Landing />} />
+      </Routes>
+    )
+  }
+
+  // Show main app if authenticated
+  return (
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-primary-dark via-primary-dark to-primary">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TopBar />
+        <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-primary-dark/50 to-primary-dark">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/test-dynamodb" element={<TestDynamoDB />} />
+              
+            {/* User Account Pages */}
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/account-settings" element={<AccountSettings />} />
+            <Route path="/preferences" element={<Preferences />} />
+            <Route path="/help-support" element={<HelpSupport />} />
+              
+            {/* Main category pages */}
+            <Route path="/raw-materials" element={<RawMaterials />} />
+            <Route path="/calculator" element={<Calculator />} />
+              
+            {/* Barrels subcategories */}
+            <Route path="/barrels/new-fill" element={<NewFill />} />
+            <Route path="/barrels/barrel-fill-log" element={<BarrelFillLog />} />
+            <Route path="/barrels/onsite-barrels" element={<OnsiteBarrels />} />
+            <Route path="/barrels/offsite-barrels" element={<OffsiteBarrels />} />
+            <Route path="/barrels/rackhouse-inventory" element={<RackhouseInventory />} />
+            <Route path="/barrels/queued-dumps" element={<QueuedDumps />} />
+            <Route path="/barrels/completed-dumps" element={<CompletedDumps />} />
+            <Route path="/barrels/barrel-history" element={<BarrelHistory />} />
+            <Route path="/barrels/update-log" element={<UpdateLog />} />
+            <Route path="/barrels/empty-barrels" element={<EmptyBarrels />} />
+              
+            {/* Processing subcategories */}
+            <Route path="/processing/new-batching-run" element={<NewBatchingRun />} />
+            <Route path="/processing/batching-run-log" element={<BatchingRunLog />} />
+            <Route path="/processing/new-bottling-run" element={<NewBottlingRun />} />
+            <Route path="/processing/bottling-run-log" element={<BottlingRunLog />} />
+              
+            {/* Transfer In Bond subcategories */}
+            <Route path="/transfer-in-bond/new-tote-tib-in" element={<NewToteTIBIn />} />
+            <Route path="/transfer-in-bond/new-tanker-tib-in" element={<NewTankerTIBIn />} />
+            <Route path="/transfer-in-bond/new-barrel-tib-in" element={<NewBarrelTIBIn />} />
+            <Route path="/transfer-in-bond/new-bulk-barrel-tib-in" element={<NewBulkBarrelTIBIn />} />
+            <Route path="/transfer-in-bond/new-finished-product-tib-in" element={<NewFinishedProductTIBIn />} />
+            <Route path="/transfer-in-bond/tib-in-log" element={<TIBInLog />} />
+            <Route path="/transfer-in-bond/new-tank-tote-tib-out" element={<NewTankToteTIBOut />} />
+            <Route path="/transfer-in-bond/new-tanker-tib-out" element={<NewTankerTIBOut />} />
+            <Route path="/transfer-in-bond/new-finished-product-tib-out" element={<NewFinishedProductTIBOut />} />
+            <Route path="/transfer-in-bond/tib-out-log" element={<TIBOutLog />} />
+              
+            {/* Finished Products subcategories */}
+            <Route path="/finished-products/finished-goods-inventory" element={<FinishedGoodsInventory />} />
+            <Route path="/finished-products/new-finished-goods-transfers" element={<NewFinishedGoodsTransfers />} />
+            <Route path="/finished-products/finished-goods-transfers-logs" element={<FinishedGoodsTransfersLogs />} />
+            <Route path="/finished-products/new-sales-order" element={<NewSalesOrder />} />
+            <Route path="/finished-products/sales-order-log" element={<SalesOrderLog />} />
+            <Route path="/finished-products/invoice-log" element={<InvoiceLog />} />
+            <Route path="/finished-products/price-lists" element={<PriceLists />} />
+              
+            {/* Tanks subcategories */}
+            <Route path="/tanks/tank-status" element={<TankStatus />} />
+            <Route path="/tanks/tank-move-log" element={<TankMoveLog />} />
+            <Route path="/tanks/filtering-log" element={<FilteringLog />} />
+            <Route path="/tanks/adjustment-log" element={<AdjustmentLog />} />
+            <Route path="/tanks/records-of-destruction" element={<RecordsOfDestruction />} />
+              
+            {/* Logs and Reports subcategories */}
+            <Route path="/logs-and-reports/ttb-production-reports" element={<TTBProductionReports />} />
+            <Route path="/logs-and-reports/ttb-storage-reports" element={<TTBStorageReports />} />
+            <Route path="/logs-and-reports/ttb-processing-reports" element={<TTBProcessingReports />} />
+            <Route path="/logs-and-reports/ttb-reports-checker" element={<TTBReportsChecker />} />
+            <Route path="/logs-and-reports/excise-tax-schedule-returns" element={<ExciseTaxScheduleReturns />} />
+            <Route path="/logs-and-reports/ws-pay-gov-chrome-extension" element={<WSPayGovChromeExtension />} />
+            <Route path="/logs-and-reports/whiskey-system-logs" element={<WhiskeySystemLogs />} />
+            <Route path="/logs-and-reports/daily-logs" element={<DailyLogs />} />
+              
+            {/* Administrator subcategories */}
+            <Route path="/administrator/delete-transactions" element={<DeleteTransactions />} />
+            <Route path="/administrator/quickbooks-export" element={<QuickBooksExport />} />
+            <Route path="/administrator/manage-users" element={<ManageUsers />} />
+              
+            {/* Settings subcategories */}
+            <Route path="/settings/dsp-settings-and-info" element={<DSPSettingsAndInfo />} />
+            <Route path="/settings/whiskey-kinds" element={<WhiskeyKinds />} />
+            <Route path="/settings/ttb-material-kinds" element={<TTBMaterialKinds />} />
+            <Route path="/settings/base-tax-rates" element={<BaseTaxRates />} />
+            <Route path="/settings/raw-materials" element={<SettingsRawMaterials />} />
+            <Route path="/settings/raw-material-bom" element={<RawMaterialBOM />} />
+            <Route path="/settings/create-bom-item" element={<CreateBOMItem />} />
+            <Route path="/settings/internal-spirit-types" element={<InternalSpiritTypes />} />
+            <Route path="/settings/new-internal-spirit-type" element={<NewInternalSpiritType />} />
+            <Route path="/settings/mash-bills" element={<MashBills />} />
+            <Route path="/settings/new-mash-bill" element={<NewMashBill />} />
+            <Route path="/settings/recipes" element={<Recipes />} />
+            <Route path="/settings/product-lines" element={<ProductLines />} />
+            <Route path="/settings/create-product-line" element={<CreateProductLine />} />
+            <Route path="/settings/product-masters" element={<ProductMasters />} />
+            <Route path="/settings/mixed-product-masters" element={<MixedProductMasters />} />
+            <Route path="/settings/fermenters" element={<Fermenters />} />
+            <Route path="/settings/tanks" element={<SettingsTanks />} />
+            <Route path="/settings/vendors" element={<Vendors />} />
+            <Route path="/settings/customers" element={<Customers />} />
+            <Route path="/settings/contacts" element={<Contacts />} />
+            <Route path="/settings/dsps" element={<DSPs />} />
+            <Route path="/settings/owners" element={<Owners />} />
+            <Route path="/settings/linked-distilleries" element={<LinkedDistilleries />} />
+            <Route path="/settings/rackhouses" element={<Rackhouses />} />
+            <Route path="/settings/warehouses" element={<Warehouses />} />
+            <Route path="/settings/create-warehouse" element={<CreateWarehouse />} />
+            <Route path="/settings/starting-tanks" element={<StartingTanks />} />
+            <Route path="/settings/starting-finished-goods" element={<StartingFinishedGoods />} />
+            <Route path="/settings/starting-raw-materials" element={<StartingRawMaterials />} />
+            <Route path="/settings/create-inventory-item" element={<CreateInventoryItem />} />
+            <Route path="/settings/starting-onsite-barrels" element={<StartingOnsiteBarrels />} />
+            <Route path="/settings/starting-offsite-barrels" element={<StartingOffsiteBarrels />} />
+              
+            {/* Production subcategories */}
+            <Route path="/production/new-fermentation" element={<NewFermentation />} />
+            <Route path="/production/fermentation-log" element={<FermentationLog />} />
+            <Route path="/production/fermenter-status" element={<FermenterStatus />} />
+            <Route path="/production/ferm-move-log" element={<FermMoveLog />} />
+            <Route path="/production/fermentation-scrap-log" element={<FermentationScrapLog />} />
+            <Route path="/production/new-distillation" element={<NewDistillation />} />
+            <Route path="/production/distillation-log" element={<DistillationLog />} />
+          </Routes>
+        </main>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   return (
     <Router>
-      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-primary-dark via-primary-dark to-primary">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <TopBar />
-          <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-primary-dark/50 to-primary-dark">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/test-dynamodb" element={<TestDynamoDB />} />
-              
-              {/* User Account Pages */}
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/account-settings" element={<AccountSettings />} />
-              <Route path="/preferences" element={<Preferences />} />
-              <Route path="/help-support" element={<HelpSupport />} />
-              
-              {/* Main category pages */}
-              <Route path="/raw-materials" element={<RawMaterials />} />
-              <Route path="/calculator" element={<Calculator />} />
-              
-              {/* Barrels subcategories */}
-              <Route path="/barrels/new-fill" element={<NewFill />} />
-              <Route path="/barrels/barrel-fill-log" element={<BarrelFillLog />} />
-              <Route path="/barrels/onsite-barrels" element={<OnsiteBarrels />} />
-              <Route path="/barrels/offsite-barrels" element={<OffsiteBarrels />} />
-              <Route path="/barrels/rackhouse-inventory" element={<RackhouseInventory />} />
-              <Route path="/barrels/queued-dumps" element={<QueuedDumps />} />
-              <Route path="/barrels/completed-dumps" element={<CompletedDumps />} />
-              <Route path="/barrels/barrel-history" element={<BarrelHistory />} />
-              <Route path="/barrels/update-log" element={<UpdateLog />} />
-              <Route path="/barrels/empty-barrels" element={<EmptyBarrels />} />
-              
-              {/* Processing subcategories */}
-              <Route path="/processing/new-batching-run" element={<NewBatchingRun />} />
-              <Route path="/processing/batching-run-log" element={<BatchingRunLog />} />
-              <Route path="/processing/new-bottling-run" element={<NewBottlingRun />} />
-              <Route path="/processing/bottling-run-log" element={<BottlingRunLog />} />
-              
-              {/* Transfer In Bond subcategories */}
-              <Route path="/transfer-in-bond/new-tote-tib-in" element={<NewToteTIBIn />} />
-              <Route path="/transfer-in-bond/new-tanker-tib-in" element={<NewTankerTIBIn />} />
-              <Route path="/transfer-in-bond/new-barrel-tib-in" element={<NewBarrelTIBIn />} />
-              <Route path="/transfer-in-bond/new-bulk-barrel-tib-in" element={<NewBulkBarrelTIBIn />} />
-              <Route path="/transfer-in-bond/new-finished-product-tib-in" element={<NewFinishedProductTIBIn />} />
-              <Route path="/transfer-in-bond/tib-in-log" element={<TIBInLog />} />
-              <Route path="/transfer-in-bond/new-tank-tote-tib-out" element={<NewTankToteTIBOut />} />
-              <Route path="/transfer-in-bond/new-tanker-tib-out" element={<NewTankerTIBOut />} />
-              <Route path="/transfer-in-bond/new-finished-product-tib-out" element={<NewFinishedProductTIBOut />} />
-              <Route path="/transfer-in-bond/tib-out-log" element={<TIBOutLog />} />
-              
-              {/* Finished Products subcategories */}
-              <Route path="/finished-products/finished-goods-inventory" element={<FinishedGoodsInventory />} />
-              <Route path="/finished-products/new-finished-goods-transfers" element={<NewFinishedGoodsTransfers />} />
-              <Route path="/finished-products/finished-goods-transfers-logs" element={<FinishedGoodsTransfersLogs />} />
-              <Route path="/finished-products/new-sales-order" element={<NewSalesOrder />} />
-              <Route path="/finished-products/sales-order-log" element={<SalesOrderLog />} />
-              <Route path="/finished-products/invoice-log" element={<InvoiceLog />} />
-              <Route path="/finished-products/price-lists" element={<PriceLists />} />
-              
-              {/* Tanks subcategories */}
-              <Route path="/tanks/tank-status" element={<TankStatus />} />
-              <Route path="/tanks/tank-move-log" element={<TankMoveLog />} />
-              <Route path="/tanks/filtering-log" element={<FilteringLog />} />
-              <Route path="/tanks/adjustment-log" element={<AdjustmentLog />} />
-              <Route path="/tanks/records-of-destruction" element={<RecordsOfDestruction />} />
-              
-              {/* Logs and Reports subcategories */}
-              <Route path="/logs-and-reports/ttb-production-reports" element={<TTBProductionReports />} />
-              <Route path="/logs-and-reports/ttb-storage-reports" element={<TTBStorageReports />} />
-              <Route path="/logs-and-reports/ttb-processing-reports" element={<TTBProcessingReports />} />
-              <Route path="/logs-and-reports/ttb-reports-checker" element={<TTBReportsChecker />} />
-              <Route path="/logs-and-reports/excise-tax-schedule-returns" element={<ExciseTaxScheduleReturns />} />
-              <Route path="/logs-and-reports/ws-pay-gov-chrome-extension" element={<WSPayGovChromeExtension />} />
-              <Route path="/logs-and-reports/whiskey-system-logs" element={<WhiskeySystemLogs />} />
-              <Route path="/logs-and-reports/daily-logs" element={<DailyLogs />} />
-              
-              {/* Administrator subcategories */}
-              <Route path="/administrator/delete-transactions" element={<DeleteTransactions />} />
-              <Route path="/administrator/quickbooks-export" element={<QuickBooksExport />} />
-              <Route path="/administrator/manage-users" element={<ManageUsers />} />
-              
-              {/* Settings subcategories */}
-              <Route path="/settings/dsp-settings-and-info" element={<DSPSettingsAndInfo />} />
-              <Route path="/settings/whiskey-kinds" element={<WhiskeyKinds />} />
-              <Route path="/settings/ttb-material-kinds" element={<TTBMaterialKinds />} />
-              <Route path="/settings/base-tax-rates" element={<BaseTaxRates />} />
-              <Route path="/settings/raw-materials" element={<SettingsRawMaterials />} />
-              <Route path="/settings/raw-material-bom" element={<RawMaterialBOM />} />
-              <Route path="/settings/create-bom-item" element={<CreateBOMItem />} />
-              <Route path="/settings/internal-spirit-types" element={<InternalSpiritTypes />} />
-              <Route path="/settings/new-internal-spirit-type" element={<NewInternalSpiritType />} />
-              <Route path="/settings/mash-bills" element={<MashBills />} />
-              <Route path="/settings/new-mash-bill" element={<NewMashBill />} />
-              <Route path="/settings/recipes" element={<Recipes />} />
-              <Route path="/settings/product-lines" element={<ProductLines />} />
-              <Route path="/settings/create-product-line" element={<CreateProductLine />} />
-              <Route path="/settings/product-masters" element={<ProductMasters />} />
-              <Route path="/settings/mixed-product-masters" element={<MixedProductMasters />} />
-              <Route path="/settings/fermenters" element={<Fermenters />} />
-              <Route path="/settings/tanks" element={<SettingsTanks />} />
-              <Route path="/settings/vendors" element={<Vendors />} />
-              <Route path="/settings/customers" element={<Customers />} />
-              <Route path="/settings/contacts" element={<Contacts />} />
-              <Route path="/settings/dsps" element={<DSPs />} />
-              <Route path="/settings/owners" element={<Owners />} />
-              <Route path="/settings/linked-distilleries" element={<LinkedDistilleries />} />
-              <Route path="/settings/rackhouses" element={<Rackhouses />} />
-              <Route path="/settings/warehouses" element={<Warehouses />} />
-              <Route path="/settings/create-warehouse" element={<CreateWarehouse />} />
-              <Route path="/settings/starting-tanks" element={<StartingTanks />} />
-              <Route path="/settings/starting-finished-goods" element={<StartingFinishedGoods />} />
-              <Route path="/settings/starting-raw-materials" element={<StartingRawMaterials />} />
-              <Route path="/settings/create-inventory-item" element={<CreateInventoryItem />} />
-              <Route path="/settings/starting-onsite-barrels" element={<StartingOnsiteBarrels />} />
-              <Route path="/settings/starting-offsite-barrels" element={<StartingOffsiteBarrels />} />
-              
-              {/* Production subcategories */}
-              <Route path="/production/new-fermentation" element={<NewFermentation />} />
-              <Route path="/production/fermentation-log" element={<FermentationLog />} />
-              <Route path="/production/fermenter-status" element={<FermenterStatus />} />
-              <Route path="/production/ferm-move-log" element={<FermMoveLog />} />
-              <Route path="/production/fermentation-scrap-log" element={<FermentationScrapLog />} />
-              <Route path="/production/new-distillation" element={<NewDistillation />} />
-              <Route path="/production/distillation-log" element={<DistillationLog />} />
-            </Routes>
-          </main>
-        </div>
-      </div>
+      <AppContent />
     </Router>
   )
 }

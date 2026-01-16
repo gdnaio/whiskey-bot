@@ -35,8 +35,14 @@ function NewInternalSpiritType() {
     try {
       setLoadingWhiskeyKinds(true)
       const items = await dynamoDBService.scanTable('whiskey_kinds')
-      items.sort((a, b) => (a.rowNumber || 999) - (b.rowNumber || 999))
-      setWhiskeyKinds(items)
+      // Filter out duplicates and empty entries, then sort by rowNumber
+      const uniqueItems = items
+        .filter(item => item.typeName && item.typeName !== '—' && item.typeName.trim() !== '')
+        .filter((item, index, self) => 
+          index === self.findIndex(t => t.typeName === item.typeName)
+        )
+        .sort((a, b) => (a.rowNumber || 999) - (b.rowNumber || 999))
+      setWhiskeyKinds(uniqueItems)
     } catch (err) {
       console.error('Error loading whiskey kinds:', err)
       // Fallback to hardcoded values if DynamoDB fails
@@ -300,13 +306,14 @@ function NewInternalSpiritType() {
                     className="flex-1 px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20 disabled:opacity-50"
                   >
                     <option value="">Select...</option>
-                    {whiskeyKinds.map((kind) => (
-                      <option key={kind.id} value={kind.typeName}>
-                        {kind.typeName}
-                      </option>
-                    ))}
-                    {/* Fallback options if DynamoDB is empty */}
-                    {whiskeyKinds.length === 0 && (
+                    {whiskeyKinds.length > 0 ? (
+                      whiskeyKinds.map((kind) => (
+                        <option key={kind.id} value={kind.typeName}>
+                          {kind.typeName}
+                        </option>
+                      ))
+                    ) : (
+                      // Fallback options only if DynamoDB is empty
                       <>
                         <option value="Bourbon">Bourbon</option>
                         <option value="Corn">Corn</option>
@@ -355,9 +362,10 @@ function NewInternalSpiritType() {
                   value={formData.reportingLineProcessingSectionIV}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-primary-dark border border-accent-blue/50 rounded-xl text-gray-100 focus:outline-none focus:border-accent-gold focus:ring-2 focus:ring-accent-gold/20"
+                  style={{ minWidth: '300px' }}
                 >
                   <option value="">Select...</option>
-                  <option value="Domestic Whiskey160An..">Domestic Whiskey160An..</option>
+                  <option value="Domestic Whiskey160AndUnder">Domestic Whiskey160AndUnder</option>
                   <option value="Domestic WhiskeyOver160">Domestic WhiskeyOver160</option>
                   <option value="RumDomestic">RumDomestic</option>
                   <option value="RumPuertoRican">RumPuertoRican</option>
@@ -365,7 +373,7 @@ function NewInternalSpiritType() {
                   <option value="RumOther">RumOther</option>
                   <option value="Gin">Gin</option>
                   <option value="Vodka">Vodka</option>
-                  <option value="CordialsLiqueursSpecial..">CordialsLiqueursSpecial..</option>
+                  <option value="CordialsLiqueursSpecialties">CordialsLiqueursSpecialties</option>
                   <option value="Cocktails">Cocktails</option>
                   <option value="Tequila">Tequila</option>
                   <option value="Other">Other</option>

@@ -214,3 +214,4 @@ The script will:
 - Show your AWS account info
 - Create all 82 tables (41 dev + 41 prod)
 
+

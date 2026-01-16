@@ -420,3 +420,4 @@ If you encounter issues:
 3. Verify IAM permissions
 4. Test with AWS CLI: `aws dynamodb list-tables --region us-east-1`
 
+

@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '@gdnaio/cognito-auth'
 
 function TopBar() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const menuRef = useRef(null)
   const navigate = useNavigate()
+  const { isAuthenticated, user, signIn, signOut } = useAuth()
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -24,9 +26,12 @@ function TopBar() {
   }, [isUserMenuOpen])
 
   const handleLogout = () => {
-    // TODO: Implement logout functionality
-    console.log('Logout clicked')
+    signOut()
     setIsUserMenuOpen(false)
+  }
+
+  const handleSignIn = () => {
+    signIn()
   }
 
   const menuItems = [
@@ -116,20 +121,29 @@ function TopBar() {
         </div>
       </Link>
       <div className="flex items-center space-x-4 relative" ref={menuRef}>
-        <div 
-          onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-          className="h-10 w-10 rounded-full bg-gradient-to-br from-accent-blue to-accent-blue-light border border-accent-gold/20 flex items-center justify-center hover:border-accent-gold/40 transition-all duration-200 cursor-pointer group relative"
-        >
-          <svg className="h-6 w-6 text-accent-gold group-hover:scale-110 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          {isUserMenuOpen && (
-            <div className="absolute top-0 right-0 w-2 h-2 bg-accent-gold rounded-full animate-pulse"></div>
-          )}
-        </div>
+        {!isAuthenticated ? (
+          <button
+            onClick={handleSignIn}
+            className="px-4 py-2 bg-gradient-to-r from-accent-gold to-accent-gold-light text-primary-dark rounded-lg hover:from-accent-gold-light hover:to-accent-gold transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
+          >
+            Sign In
+          </button>
+        ) : (
+          <div 
+            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+            className="h-10 w-10 rounded-full bg-gradient-to-br from-accent-blue to-accent-blue-light border border-accent-gold/20 flex items-center justify-center hover:border-accent-gold/40 transition-all duration-200 cursor-pointer group relative"
+          >
+            <svg className="h-6 w-6 text-accent-gold group-hover:scale-110 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            {isUserMenuOpen && (
+              <div className="absolute top-0 right-0 w-2 h-2 bg-accent-gold rounded-full animate-pulse"></div>
+            )}
+          </div>
+        )}
 
         {/* User Menu Dropdown */}
-        {isUserMenuOpen && (
+        {isAuthenticated && isUserMenuOpen && (
           <div className="absolute top-full right-0 mt-2 w-64 rounded-xl bg-gradient-to-br from-primary-light via-primary-light to-primary-dark border border-accent-blue/50 shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             {/* User Info Header */}
             <div className="px-4 py-4 border-b border-accent-blue/30 bg-gradient-to-r from-accent-blue/10 to-transparent">
@@ -140,8 +154,12 @@ function TopBar() {
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold truncate">User Account</p>
-                  <p className="text-gray-400 text-sm truncate">user@distillery.com</p>
+                  <p className="text-white font-semibold truncate">
+                    {user?.name || user?.email || 'User Account'}
+                  </p>
+                  <p className="text-gray-400 text-sm truncate">
+                    {user?.email || 'user@distillery.com'}
+                  </p>
                 </div>
               </div>
             </div>

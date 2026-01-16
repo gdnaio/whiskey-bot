@@ -84,3 +84,4 @@ npm install @aws-sdk/client-dynamodb @aws-sdk/client-sts
 - Check AWS Console to see which tables were created
 - Re-run script (it will skip existing tables)
 
+

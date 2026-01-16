@@ -245,3 +245,4 @@ Once connected, you can:
 
 Your app is now ready to use DynamoDB! 🎉
 
+
